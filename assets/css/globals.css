@@ -1,0 +1,143 @@
+/* globals.css - extracted placeholder
+   The full CSS from foodgasm_fixed.html will be split into globals/components/auth/responsive/animations.
+*/
+
+:root {
+  --brand: #FF4500;
+  --brand-2: #FF6B35;
+  --brand-3: #FFB347;
+  --brand-glow: rgba(255,69,0,0.35);
+  --green: #22C55E;
+  --red: #EF4444;
+  --yellow: #F59E0B;
+  --blue: #3B82F6;
+
+  --bg: #0A0A0B;
+  --surface: #1A1A20;
+  --surface-2: #222229;
+  --surface-3: #2A2A33;
+  --border: rgba(255,255,255,0.07);
+  --border-2: rgba(255,255,255,0.12);
+  --text: #F8F8F8;
+  --text-2: #B0B0C0;
+  --text-3: #8F8FA8;
+  --overlay: rgba(0,0,0,0.6);
+
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow: 0 4px 20px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.5);
+  --shadow-brand: 0 4px 24px var(--brand-glow);
+
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 9999px;
+
+  --font-display: 'Orbitron', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-alt: 'Exo 2', sans-serif;
+
+  --nav-h: 68px;
+  --bottom-nav-h: 64px;
+
+  --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+  --transition-spring: 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+[data-theme="light"] {
+  --bg: #FFF8F5;
+  --surface: #FFFFFF;
+  --surface-2: #FDF5F0;
+  --surface-3: #FAEAE0;
+  --border: rgba(0,0,0,0.07);
+  --border-2: rgba(0,0,0,0.12);
+  --text: #1A1A1A;
+  --text-2: #555560;
+  --text-3: #717180;
+  --overlay: rgba(0,0,0,0.5);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; overflow-x: clip; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--font-body); }
+
+.skip-link {
+  position: fixed;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  background: var(--brand);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-weight: 700;
+  transition: top 0.15s;
+}
+.skip-link:focus { top: 0; }
+
+.container { width: 100%; max-width: 1240px; margin: 0 auto; padding: 0 16px; }
+@media(min-width:640px){ .container{ padding:0 24px; } }
+@media(min-width:1024px){ .container{ padding:0 32px; } }
+
+/* Loader minimal styles */
+#app-loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 20px;
+}
+#app-loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-logo { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; color: var(--brand); }
+.loader-dots { display:flex; gap: 6px; }
+.loader-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+
+.scroll-top-btn {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-h) + 24px);
+  right: 20px;
+  z-index: 800;
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: var(--shadow-brand);
+  opacity: 0; transform: translateY(10px); pointer-events: none;
+  transition: all var(--transition);
+}
+.scroll-top-btn.visible { opacity: 1; transform: translateY(0); pointer-events: all; }
+
+.chatbot-fab {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-h) + 16px);
+  right: 20px;
+  z-index: 900;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,var(--brand),var(--brand-2));
+  color: #fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: 0 4px 24px rgba(255,69,0,0.55);
+  font-size: 1.5rem;
+}
+
+.page { display:none; }
+.page.active { display:block; }
+
+/* Basic empty state (used as temporary placeholder) */
+.empty-state { display:flex; flex-direction:column; align-items:center; justify-content:center; padding: 64px 24px; gap:12px; text-align:center; }
+.empty-state-icon { font-size: 3.5rem; }
+.empty-state-title { font-size: 1.2rem; font-weight: 700; color: var(--text); }
+.empty-state-sub { font-size: 0.875rem; color: var(--text-2); max-width: 280px; }
+
