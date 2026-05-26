@@ -43,6 +43,8 @@ This app is a static SPA.
 - Ensure your hosting platform serves `index.html` for unknown routes (SPA fallback).
 - Publish `index.html`, `/assets/*`, `manifest.json`, and `sw.js`.
 
+
+
 ## Project structure
 
 ```text
