@@ -1,31 +1,54 @@
-# Foodgasm — Food Delivery Frontend (Supabase)
+# Foodgasm 🍔 — Food Delivery SPA (Supabase)
 
-Foodgasm is a single-page food delivery frontend built with **HTML/CSS/JavaScript** and powered by **Supabase** for authentication and data.
+A clean, recruiter-friendly **vanilla JavaScript** single-page food delivery frontend with **Supabase** authentication/data and **PWA** support.
 
-## What’s included
+🌐 **Live demo:** https://foodie-gasm.netlify.app/
 
-- Landing page UI with categories, trending, and restaurant browsing
-- Menu browsing and food detail modal
-- Search with filters and recent searches
-- Cart + wishlist (stored locally, optionally synced)
-- Checkout flow (COD + Razorpay UI)
-- Orders history with live tracking UI
-- Profile + settings (theme/language/currency)
+
+---
+
+## ✨ Highlights
+
+- Responsive landing + restaurant browsing
+- Menu & food detail modal
+- Search with filters + recent searches
+- Cart & wishlist (local storage)
+- Checkout UI (COD + Razorpay)
+- Orders history + live tracking UI
+- Profile/settings (theme, language, currency)
 - Admin dashboard widgets
-- PWA support (manifest + `sw.js`)
+- **PWA**: `manifest.json` + `sw.js`
 
-## Technologies
+---
 
-- Frontend: Vanilla JS (no framework)
-- Backend/Auth/DB: Supabase REST + Auth endpoints
+## 🧰 Tech Stack
+
+- Frontend: Vanilla JS / HTML / CSS (no framework)
+- Backend/Auth/DB: **Supabase REST + Auth**
 - PWA: Service Worker (`sw.js`)
 - Payments UI: Razorpay checkout script
 
-## Runtime configuration (no secrets in repo)
+---
 
-`assets/js/config.js` reads Supabase values from `window.ENV`.
+## 🗂 Project Structure
 
-Deploy-time example:
+```text
+.
+├── index.html
+├── manifest.json
+├── sw.js
+└── assets/
+    ├── css/
+    └── js/
+        ├── config.js
+        └── app.js
+```
+
+---
+
+## 🔧 Configuration (no secrets committed)
+
+`assets/js/config.js` reads Supabase settings from `window.ENV`.
 
 ```html
 <script>
@@ -36,33 +59,21 @@ Deploy-time example:
 </script>
 ```
 
-## Deployment
+---
 
-This app is a static SPA.
+## 🚀 Deployment
 
-- Ensure your hosting platform serves `index.html` for unknown routes (SPA fallback).
-- Publish `index.html`, `/assets/*`, `manifest.json`, and `sw.js`.
+This is a static SPA.
 
+- Serve `index.html` for unknown routes (SPA fallback)
+- Publish: `index.html`, `/assets/*`, `manifest.json`, `sw.js`
 
-
-## Project structure
-
-```text
-.
-├── index.html
-├── manifest.json
-├── sw.js
-├── assets/
-│   ├── css/
-│   └── js/
-│       ├── config.js
-│       └── app.js
-└── (other static files)
-```
+---
 
 ## Notes
 
-- Authentication uses Supabase token refresh and validates the session via `GET /auth/v1/user`.
-- For best results, configure Supabase schema + RLS policies to match the app tables.
+- Uses Supabase session validation via `GET /auth/v1/user`.
+- Recommended: configure Supabase schema + **RLS** policies to match the app tables.
+
 
 
