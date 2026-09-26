@@ -14,17 +14,39 @@
 <title>Foodgasm – Premium Food Delivery</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link rel="icon" type="image/png" href="favicon.ico"/>
+
+<!-- Leaflet.js for Live Delivery Tracking Map Radar -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <!-- Chart.js for admin revenue charts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 <!-- Razorpay Payment -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
-
-  <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+<!-- ===== RECRUITER QUICK-TEST BAR ===== -->
+<aside id="recruiter-bar" class="recruiter-bar" aria-label="Recruiter Quick Access Bar">
+  <div class="container recruiter-inner">
+    <div class="recruiter-title">
+      <span class="recruiter-pulse"></span>
+      <span class="recruiter-badge">RECRUITER DEMO MODE</span>
+      <span class="recruiter-desc">1-Click Test All Roles:</span>
+    </div>
+    <div class="recruiter-actions">
+      <button class="recruiter-btn" onclick="quickLoginDemo('customer')" title="Login as Aditya Roy (Customer)">👤 Customer</button>
+      <button class="recruiter-btn" onclick="quickLoginDemo('owner')" title="Login as Rajesh Sharma (Restaurant Partner)">🏪 Restaurant Partner</button>
+      <button class="recruiter-btn" onclick="quickLoginDemo('rider')" title="Login as Vikram Singh (Delivery Rider)">🛵 Delivery Rider</button>
+      <button class="recruiter-btn" onclick="quickLoginDemo('admin')" title="Login as Bitan Chakraborty (Admin)">👑 Admin</button>
+      <button class="recruiter-btn btn-ghost" onclick="resetDemoSession()" title="Logout and browse as guest">🔄 Guest</button>
+    </div>
+  </div>
+</aside>
 
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
@@ -1271,6 +1293,8 @@
   🔔<div class="push-bell-dot" id="push-bell-dot" style="display:none"></div>
 </button>
 
+<script src="js/i18n.js"></script>
+<script src="js/geo.js"></script>
 <script src="js/data.js"></script>
 <script src="js/app.js" defer></script>
 </body>

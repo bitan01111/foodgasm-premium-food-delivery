@@ -1,0 +1,27 @@
+{
+  "name": "foodgasm",
+  "version": "1.0.0",
+  "description": "A clean, recruiter-friendly **vanilla JavaScript** single-page food delivery frontend with **Supabase** authentication/data and **PWA** support.",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitan01111/foodgasm-premium-food-delivery.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bitan01111/foodgasm-premium-food-delivery/issues"
+  },
+  "homepage": "https://github.com/bitan01111/foodgasm-premium-food-delivery#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
+  }
+}

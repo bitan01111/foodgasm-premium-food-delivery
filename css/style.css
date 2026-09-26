@@ -36,9 +36,9 @@
   --radius-xl: 28px;
   --radius-full: 9999px;
 
-  --font-display: 'Inter', sans-serif;
+  --font-display: 'Outfit', 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
-  --font-alt: 'Inter', sans-serif;
+  --font-alt: 'Outfit', sans-serif;
 
   --nav-h: 68px;
   --bottom-nav-h: 64px;
@@ -2305,4 +2305,182 @@ input::placeholder, textarea::placeholder {
   background: var(--text-3) !important;
 }
 
-/* ===== END OF REFAC ===== */
+/* ============================================================
+   🎯 FOODGASM 2.0: RECRUITER BAR & LIVE MAP RADAR STYLES
+   ============================================================ */
+
+/* Recruiter Bar */
+.recruiter-bar {
+  background: linear-gradient(90deg, #111116 0%, #1a1622 50%, #15121c 100%);
+  border-bottom: 1px solid rgba(255, 69, 0, 0.25);
+  padding: 8px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+}
+.recruiter-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.recruiter-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.recruiter-pulse {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22C55E;
+  box-shadow: 0 0 10px #22C55E;
+  animation: recruiterPulse 2s infinite;
+}
+@keyframes recruiterPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+.recruiter-badge {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  color: var(--brand);
+  background: rgba(255, 69, 0, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 69, 0, 0.3);
+}
+.recruiter-desc {
+  font-size: 0.8rem;
+  color: var(--text-2);
+  font-weight: 500;
+}
+.recruiter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.recruiter-btn {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.recruiter-btn:hover {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(255, 69, 0, 0.4);
+}
+.recruiter-btn.btn-ghost {
+  background: transparent;
+  color: var(--text-3);
+  border-color: transparent;
+}
+.recruiter-btn.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  box-shadow: none;
+}
+
+/* Live Leaflet Map Container */
+#live-tracker-map {
+  width: 100%;
+  height: 280px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin: 16px 0;
+  border: 1px solid var(--border-2);
+  box-shadow: var(--shadow);
+  z-index: 5;
+}
+
+/* Custom Marker Styling */
+.rider-map-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+  animation: riderBounce 1.5s infinite ease-in-out;
+}
+@keyframes riderBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Macro Nutrition Dashboard in Cart */
+.macro-tracker-card {
+  background: linear-gradient(135deg, rgba(255, 69, 0, 0.08), rgba(255, 107, 53, 0.04));
+  border: 1px solid rgba(255, 69, 0, 0.2);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 14px 0;
+}
+.macro-tracker-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.macro-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+.macro-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 4px;
+}
+.macro-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--brand);
+}
+.macro-label {
+  font-size: 0.68rem;
+  color: var(--text-3);
+  text-transform: uppercase;
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+/* Street Food Cart Badge */
+.badge-cart-type {
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== END OF FOODGASM 2.0 STYLES ===== */
