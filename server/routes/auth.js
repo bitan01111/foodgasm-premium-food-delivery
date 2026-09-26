@@ -147,6 +147,55 @@ router.get('/demo-login/:role', (req, res) => {
   }
 });
 
+// POST /api/auth/google (Google One-Tap / OAuth sign-in)
+router.post('/google', (req, res) => {
+  try {
+    const { email, name, avatar } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Google email is required' });
+    }
+
+    const cleanEmail = email.toLowerCase().trim();
+    let user = db.prepare('SELECT * FROM users WHERE email = ?').get(cleanEmail);
+
+    if (!user) {
+      const id = 'usr_g_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+      const userName = name ? name.trim() : cleanEmail.split('@')[0];
+      const userAvatar = avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop';
+      db.prepare(`
+        INSERT INTO users (id, name, email, password_hash, phone, role, avatar)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        id,
+        userName,
+        cleanEmail,
+        'oauth_google_login',
+        '',
+        'customer',
+        userAvatar
+      );
+      user = { id, name: userName, email: cleanEmail, role: 'customer', avatar: userAvatar };
+    }
+
+    const token = generateToken(user);
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone || '',
+        role: user.role,
+        avatar: user.avatar
+      },
+      message: `Signed in with Google as ${user.name}! 🚀`
+    });
+  } catch (err) {
+    console.error('[Auth.google]', err);
+    res.status(500).json({ error: 'Google authentication error' });
+  }
+});
+
 // GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => {
   try {

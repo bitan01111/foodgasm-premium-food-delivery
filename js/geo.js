@@ -69,6 +69,40 @@ async function detectGpsLocation() {
   });
 }
 
+function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return 1.5;
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const d = R * c;
+  return Math.max(0.4, Math.round(d * 10) / 10);
+}
+
+function updateRestaurantDistances(userLat, userLng) {
+  if (!userLat || !userLng || typeof RESTAURANTS === 'undefined') return;
+  RESTAURANTS.forEach(r => {
+    if (r.lat && r.lng) {
+      const d = calculateDistanceKm(userLat, userLng, r.lat, r.lng);
+      r.distance_km = d;
+      if (d < 35) {
+        r.distance = `${d} km`;
+        const minT = Math.max(15, Math.round(10 + d * 3));
+        const maxT = Math.max(25, Math.round(minT + 10));
+        r.deliveryTime = `${minT}-${maxT}`;
+        r.deliveryFee = d > 8 ? 40 : d > 4 ? 20 : 0;
+      } else {
+        r.distance = `${d} km (${r.city})`;
+        r.deliveryTime = '35-50';
+      }
+    }
+  });
+}
+
 function setLocation(loc) {
   currentLocation = loc;
   localStorage.setItem('fg_user_location', JSON.stringify(loc));
@@ -76,6 +110,19 @@ function setLocation(loc) {
   const cityEl = document.getElementById('location-city');
   if (cityEl) {
     cityEl.textContent = loc.name || loc.city;
+  }
+
+  // Recalculate distances from user coordinates
+  if (loc.lat && loc.lng) {
+    updateRestaurantDistances(loc.lat, loc.lng);
+  }
+
+  if (typeof STATE !== 'undefined') {
+    STATE.location = loc.city || loc.name;
+    localStorage.setItem('fg_location', STATE.location);
+    if (typeof renderHomeRestaurants === 'function') renderHomeRestaurants();
+    if (typeof renderHomeFoods === 'function') renderHomeFoods();
+    if (typeof renderRestaurantsList === 'function' && STATE.currentPage === 'restaurants') renderRestaurantsList();
   }
 
   if (typeof window.onLocationChange === 'function') {
@@ -114,11 +161,20 @@ function selectSavedAddress(type) {
   }
 }
 
+// Initial calculation on load
+if (currentLocation && currentLocation.lat && currentLocation.lng) {
+  setTimeout(() => {
+    updateRestaurantDistances(currentLocation.lat, currentLocation.lng);
+  }, 100);
+}
+
 window.GEO = {
   cities: INDIAN_CITIES,
   get current() { return currentLocation; },
   detectGpsLocation,
   setLocation,
   selectCity,
-  selectSavedAddress
+  selectSavedAddress,
+  calculateDistanceKm,
+  updateRestaurantDistances
 };
