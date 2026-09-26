@@ -4,6 +4,8 @@
   "description": "A clean, recruiter-friendly **vanilla JavaScript** single-page food delivery frontend with **Supabase** authentication/data and **PWA** support.",
   "main": "sw.js",
   "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

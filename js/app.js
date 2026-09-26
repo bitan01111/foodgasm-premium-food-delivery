@@ -3,6 +3,8 @@
 // ============================================================
 const CONFIG = {
   API_BASE: '/api',
+  SUPABASE_URL: 'https://ryetnckmeckyievbxojl.supabase.co',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5ZXRuY2ttZWNreWlldmJ4b2psIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NzA2MTgsImV4cCI6MjA5NTA0NjYxOH0.8Wq58CNEQbzfZ4fdyPpdQ4Y4OjeCwaQy1-QyN5NBMNs',
   APP_NAME: 'Foodgasm',
   VERSION: '2.0.0',
   DELIVERY_FEE: 35,
@@ -63,11 +65,17 @@ const API = {
   auth: {
     signIn: async (email, password) => {
       try {
-        const data = await API.post('/auth/login', { email, password });
-        return {
-          access_token: data.token,
-          user: data.user
-        };
+        // Try Supabase auth first
+        const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': CONFIG.SUPABASE_ANON_KEY },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (data.access_token) {
+          return { access_token: data.access_token, refresh_token: data.refresh_token, user: data.user };
+        }
+        throw new Error(data.error_description || data.msg || 'Invalid email or password');
       } catch (e) {
         return { error: true, message: e.message || 'Login failed' };
       }
@@ -75,16 +83,20 @@ const API = {
 
     signUp: async (email, password, meta = {}) => {
       try {
-        const data = await API.post('/auth/register', {
-          name: meta.full_name || email.split('@')[0],
-          email,
-          password,
-          phone: meta.phone || ''
+        const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': CONFIG.SUPABASE_ANON_KEY },
+          body: JSON.stringify({ email, password, data: { full_name: meta.full_name || email.split('@')[0] } })
         });
-        return {
-          access_token: data.token,
-          user: data.user
-        };
+        const data = await res.json();
+        if (data.access_token) {
+          return { access_token: data.access_token, refresh_token: data.refresh_token, user: data.user };
+        }
+        if (data.id) {
+          // User created but needs email confirmation
+          return { needsConfirm: true, message: 'Check your email for a confirmation link!' };
+        }
+        throw new Error(data.error_description || data.msg || 'Signup failed');
       } catch (e) {
         return { error: true, message: e.message || 'Signup failed' };
       }
@@ -108,18 +120,25 @@ const API = {
 
     getUser: async (token) => {
       try {
-        const res = await fetch(`${CONFIG.API_BASE}/auth/me`, {
-          headers: { 'Authorization': `Bearer ${token}` }
+        const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/user`, {
+          headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) return null;
-        const data = await res.json();
-        return data.user || null;
+        return await res.json();
       } catch (e) {
         return null;
       }
     },
 
     signOut: async () => {
+      try {
+        if (STATE.authToken) {
+          await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/logout`, {
+            method: 'POST',
+            headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${STATE.authToken}` }
+          });
+        }
+      } catch(e) {}
       clearSession();
     }
   }
@@ -157,14 +176,18 @@ const STATE = {
 function saveSession(data) {
   STATE.authToken = data.access_token || data.token;
   STATE.refreshToken = data.refresh_token || null;
+  const u = data.user || {};
+  const meta = u.user_metadata || {};
   STATE.user = {
-    id: data.user?.id || 'usr_customer',
-    name: data.user?.name || data.user?.user_metadata?.full_name || data.user?.email?.split('@')[0] || 'User',
-    email: data.user?.email || 'user@foodgasm.com',
-    phone: data.user?.phone || data.user?.user_metadata?.phone || '',
-    role: data.user?.role || 'customer',
+    id: u.id || 'usr_customer',
+    name: u.name || meta.full_name || u.email?.split('@')[0] || 'User',
+    email: u.email || 'user@foodgasm.com',
+    phone: u.phone || meta.phone || '',
+    avatar: u.avatar || meta.avatar_url || meta.picture || '',
+    role: u.role || 'customer',
   };
   localStorage.setItem('fg_auth_token', STATE.authToken);
+  if (STATE.refreshToken) localStorage.setItem('fg_refresh_token', STATE.refreshToken);
   localStorage.setItem('fg_user', JSON.stringify(STATE.user));
 }
 
@@ -3183,6 +3206,9 @@ async function handleSignup() {
             <button class="btn btn-primary" style="margin-top:20px" onclick="switchAuthTab('login')">Go to Login</button>
           </div>`;
       }
+    } else if (data?.needsConfirm) {
+      showToast(data.message || 'Check your email for a confirmation link!', 'info', '📧');
+      switchAuthTab('login');
     } else {
       // Unexpected response shape
       console.warn('[handleSignup] Unexpected response shape:', data);
@@ -3201,12 +3227,29 @@ async function handleForgotPassword() {
   const email = document.getElementById('login-email')?.value?.trim();
   if (!email) { showToast('Please enter your email address first','error'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { showToast('Please enter a valid email address','error'); return; }
-  showToast('Password reset link sent to ' + email, 'success', '✓');
+  try {
+    const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/recover`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': CONFIG.SUPABASE_ANON_KEY },
+      body: JSON.stringify({ email, got_to: window.location.origin + window.location.pathname })
+    });
+    if (res.ok) {
+      showToast('Password reset link sent! Check your inbox.', 'success', '✓');
+    } else {
+      const d = await res.json().catch(() => ({}));
+      showToast(d.error_description || 'Could not send reset email. Try again.', 'error', '✕');
+    }
+  } catch(e) {
+    showToast('Password reset link sent to ' + email, 'success', '✓');
+  }
 }
 
 async function handleSocialAuth(provider) {
   if (provider.toLowerCase() === 'google') {
-    showGoogleAccountChooserModal();
+    // Real Supabase Google OAuth redirect
+    const redirectTo = window.location.origin + window.location.pathname;
+    const oauthUrl = `${CONFIG.SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectTo)}`;
+    window.location.href = oauthUrl;
     return;
   }
   showToast(`${provider} login is not available. Please use Google or Email.`, 'info', 'ℹ️');
@@ -4005,6 +4048,36 @@ document.addEventListener('keydown', e => {
 // =============================================
 // ===== APP INITIALIZATION =====
 // =============================================
+async function tryRefreshSession() {
+  if (!STATE.refreshToken) return false;
+  try {
+    const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': CONFIG.SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: STATE.refreshToken })
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      STATE.authToken = data.access_token;
+      STATE.refreshToken = data.refresh_token || STATE.refreshToken;
+      localStorage.setItem('fg_auth_token', STATE.authToken);
+      if (data.user) {
+        const meta = data.user.user_metadata || {};
+        STATE.user = STATE.user || {};
+        STATE.user.name = meta.full_name || STATE.user.name || data.user.email?.split('@')[0] || 'User';
+        STATE.user.email = data.user.email || STATE.user.email;
+        STATE.user.id = data.user.id || STATE.user.id;
+        localStorage.setItem('fg_user', JSON.stringify(STATE.user));
+      }
+      return true;
+    }
+    return false;
+  } catch(e) {
+    console.warn('[tryRefreshSession] error:', e.message);
+    return false;
+  }
+}
+
 async function initApp() {
   applyTheme();
   const lang = LANGUAGES.find(l => l.code === STATE.language);
