@@ -175,11 +175,9 @@ const app = {
     
     document.querySelectorAll('.nav-btn').forEach(btn => {
       const isSelected = btn.dataset.tab === tabId;
-      if (tabId === 'orders') {
-        // Light theme nav
+      if (['orders', 'profile'].includes(tabId)) {
         btn.className = `nav-btn w-full flex items-center px-8 py-3.5 text-xs font-semibold transition-all duration-200 ${isSelected ? 'bg-white text-panelLight rounded-r-full' : 'text-white hover:bg-white/10 rounded-r-full'}`;
       } else {
-        // Dark theme nav
         btn.className = `nav-btn w-full flex items-center px-8 py-3.5 text-xs font-semibold transition-all duration-200 ${isSelected ? 'bg-gradient-to-r from-[#FF5E3A]/20 to-transparent text-[#FF5E3A] border-l-2 border-[#FF5E3A]' : 'text-zinc-400 hover:text-white'}`;
       }
     });
@@ -187,22 +185,78 @@ const app = {
     const sidebar = document.getElementById('sidebar');
     const logoText = document.getElementById('logo-text');
     
-    document.getElementById('tab-home').classList.add('hidden');
-    document.getElementById('tab-orders').classList.add('hidden');
+    // Hide all tabs first
+    ['tab-home', 'tab-orders', 'tab-generic'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.classList.add('hidden');
+    });
     
-    if (tabId === 'orders') {
+    // Theme switching logic based on tab
+    if (['orders', 'profile'].includes(tabId)) {
       sidebar.classList.remove('bg-panelDark');
       sidebar.classList.add('bg-panelLight');
       logoText.classList.remove('text-brand');
       logoText.classList.add('text-white');
-      document.getElementById('tab-orders').classList.remove('hidden');
     } else {
       sidebar.classList.add('bg-panelDark');
       sidebar.classList.remove('bg-panelLight');
       logoText.classList.add('text-brand');
       logoText.classList.remove('text-white');
-      document.getElementById('tab-home').classList.remove('hidden');
     }
+
+    if (tabId === 'home') {
+      document.getElementById('tab-home').classList.remove('hidden');
+    } else if (tabId === 'orders') {
+      document.getElementById('tab-orders').classList.remove('hidden');
+    } else if (tabId === 'wishlist') {
+      // Re-use home layout but filter dishes
+      document.getElementById('tab-home').classList.remove('hidden');
+      this.renderWishlistOnly();
+    } else {
+      // Generic tab fallback
+      const generic = document.getElementById('tab-generic');
+      if(generic) {
+         generic.classList.remove('hidden');
+         generic.innerHTML = `
+           <div class="flex-1 flex items-center justify-center bg-bgDark text-white w-full">
+             <div class="text-center">
+               <i data-lucide="${this.tabs.find(t=>t.id===tabId).icon}" class="w-16 h-16 mx-auto mb-4 text-brand"></i>
+               <h2 class="text-2xl font-bold mb-2 capitalize">${tabId} Page</h2>
+               <p class="text-zinc-400 text-sm">This section is currently under construction for the demo.</p>
+             </div>
+           </div>
+         `;
+         if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  },
+  
+  renderWishlistOnly() {
+    const grid = document.getElementById('dishes-grid');
+    if (!grid) return;
+    const items = this.dishes.filter(d => this.wishlist.includes(d.id));
+    if (items.length === 0) {
+      grid.innerHTML = '<div class="col-span-full text-center text-zinc-500 py-10">Your wishlist is empty.</div>';
+      return;
+    }
+    grid.innerHTML = items.map((d) => `
+      <div class="bg-panelDark rounded-xl p-3 border border-white/5 flex flex-col hover:bg-white/5 transition-colors group">
+        <div class="relative aspect-video rounded-lg overflow-hidden mb-3">
+          <img src="${d.image}" alt="${d.name}" class="w-full h-full object-cover transition-transform group-hover:scale-105" />
+          <button class="absolute top-2 right-2 p-1.5 rounded-full bg-black/50 text-white" onclick="app.toggleWishlist('${d.id}')">
+            <i data-lucide="heart" class="w-3 h-3 ${this.wishlist.includes(d.id) ? 'fill-white text-white' : ''}"></i>
+          </button>
+        </div>
+        <h3 class="text-white font-semibold text-xs mb-1 line-clamp-1">${d.name}</h3>
+        <div class="flex items-center justify-between mt-auto pt-2">
+          <span class="text-white text-xs">$${d.price.toFixed(2)}</span>
+          <button onclick="app.addToCart('${d.id}')" class="px-3 py-1.5 rounded bg-brand text-white text-[10px] font-bold">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    `).join('');
+    if (window.lucide) window.lucide.createIcons();
   }
 };
 
