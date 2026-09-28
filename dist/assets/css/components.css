@@ -1,0 +1,46 @@
+/* components.css - placeholder while extraction is ongoing */
+
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 24px; border-radius: var(--radius-lg); font-size:0.9rem; font-weight:700; cursor:pointer; transition: all var(--transition); position:relative; overflow:hidden; border:none; }
+.btn::after{ content:''; position:absolute; inset:0; background:rgba(255,255,255,0.12); opacity:0; transition:opacity var(--transition); }
+.btn:hover::after{ opacity:1; }
+.btn:active{ transform:scale(0.97); }
+.btn-primary{ background: var(--brand); color:#fff; box-shadow: var(--shadow-brand); }
+.btn-primary:hover{ background: var(--brand-2); }
+.btn-secondary{ background: var(--surface-2); color: var(--text); border:1.5px solid var(--border-2); }
+.btn-sm{ padding: 8px 14px; border-radius: var(--radius); font-size:0.8125rem; }
+
+.nav-inner{ height: 100%; display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+#navbar { position: fixed; top:0; left:0; right:0; z-index: 900; height: var(--nav-h); background: var(--bg); border-bottom: 1px solid var(--border); }
+
+#main-content{ padding-top: var(--nav-h); padding-bottom: calc(var(--bottom-nav-h) + 16px); }
+
+#bottom-nav{ position: fixed; bottom:0; left:0; right:0; z-index: 900; height: var(--bottom-nav-h); background: var(--surface); border-top: 1px solid var(--border); display:flex; align-items:center; justify-content: space-around; }
+@media(min-width:768px){ #bottom-nav{ display:none; } }
+
+.bottom-nav-item { background: transparent; border: none; }
+
+.lang-dropdown{ position:absolute; top:calc(100% + 8px); right:0; }
+.hidden{ display:none !important; }
+
+/* Basic PWA banner styles */
+#pwa-install {
+  position: fixed;
+  left: 16px; right: 16px;
+  bottom: calc(var(--bottom-nav-h) + 12px);
+  z-index: 850;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display:flex; align-items:center; gap:12px;
+  transform: translateY(140%);
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+#pwa-install.show { transform: translateY(0); }
+.pwa-install-mark{ font-size:1.8rem; font-weight:800; color: var(--brand); }
+.pwa-text{ flex:1; }
+.pwa-title{ font-size:0.875rem; font-weight:700; color: var(--text); }
+.pwa-sub{ font-size:0.75rem; color: var(--text-3); }
+
+.scroll-top-btn{ cursor:pointer; }
+
