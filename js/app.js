@@ -75,7 +75,7 @@ const app = {
     if (!this.supabase) return alert("Supabase config not found.");
     await this.supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + window.location.pathname }
+      options: { redirectTo: 'https://foodie-gasm.netlify.app/' }
     });
   },
   
