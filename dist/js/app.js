@@ -407,28 +407,72 @@ const app = {
     this.switchTab('orders');
   },
   
-  initMap() {
+  async initMap() {
     if(this.map || typeof L === 'undefined') return;
     const mapEl = document.getElementById('leaflet-map');
     if(!mapEl) return;
     
-    this.map = L.map('leaflet-map', { zoomControl: false, attributionControl: false }).setView([28.6139, 77.2090], 14);
+    // User coords or default Delhi
+    let userLat = 28.6139;
+    let userLon = 77.2090;
+    
+    if (navigator.geolocation) {
+       navigator.geolocation.getCurrentPosition(async (pos) => {
+         this.startLiveTracking(pos.coords.latitude, pos.coords.longitude);
+       }, () => {
+         this.startLiveTracking(userLat, userLon);
+       });
+    } else {
+       this.startLiveTracking(userLat, userLon);
+    }
+  },
+  
+  async startLiveTracking(userLat, userLon) {
+    this.map = L.map('leaflet-map', { zoomControl: false, attributionControl: false }).setView([userLat, userLon], 14);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(this.map);
     
-    // Add delivery marker
-    const icon = L.divIcon({ className: 'bg-brand text-white rounded-full flex items-center justify-center shadow-lg p-2', html: '<i data-lucide="bus" class="w-4 h-4"></i>', iconSize: [32,32] });
-    this.deliveryMarker = L.marker([28.6139, 77.2090], { icon }).addTo(this.map);
+    // Add User Marker (Home)
+    const homeIcon = L.divIcon({ className: 'bg-black text-white rounded-full flex items-center justify-center shadow-lg p-2', html: '<i data-lucide="home" class="w-4 h-4"></i>', iconSize: [32,32] });
+    L.marker([userLat, userLon], { icon: homeIcon }).addTo(this.map);
+    
+    // Fake a restaurant location 2km away
+    const restLat = userLat + 0.015;
+    const restLon = userLon + 0.015;
+    
+    // Add Restaurant Marker
+    const restIcon = L.divIcon({ className: 'bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg p-2', html: '<i data-lucide="store" class="w-4 h-4"></i>', iconSize: [32,32] });
+    L.marker([restLat, restLon], { icon: restIcon }).addTo(this.map);
+    
+    // Driver Marker
+    const driverIcon = L.divIcon({ className: 'bg-brand text-white rounded-full flex items-center justify-center shadow-lg p-2', html: '<i data-lucide="bus" class="w-4 h-4"></i>', iconSize: [32,32] });
+    this.deliveryMarker = L.marker([restLat, restLon], { icon: driverIcon }).addTo(this.map);
+    
     if(window.lucide) window.lucide.createIcons();
     
-    // Animate marker
-    let lat = 28.6139;
-    let lng = 77.2090;
-    setInterval(() => {
-       lat += (Math.random() - 0.2) * 0.0002;
-       lng += (Math.random() - 0.2) * 0.0002;
-       this.deliveryMarker.setLatLng([lat, lng]);
-       this.map.panTo([lat, lng], {animate: true, duration: 1});
-    }, 2000);
+    // Fetch REAL driving route using OSRM API!
+    try {
+       const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${restLon},${restLat};${userLon},${userLat}?overview=full&geometries=geojson`);
+       const data = await res.json();
+       if(data.routes && data.routes[0]) {
+          const coords = data.routes[0].geometry.coordinates; // [lon, lat]
+          const latlngs = coords.map(c => [c[1], c[0]]);
+          
+          // Draw the route line on map
+          L.polyline(latlngs, {color: '#FF5E3A', weight: 4, dashArray: '10, 10'}).addTo(this.map);
+          
+          // Animate driver along the real street route
+          let i = 0;
+          setInterval(() => {
+             if (i < latlngs.length) {
+                this.deliveryMarker.setLatLng(latlngs[i]);
+                this.map.panTo(latlngs[i], {animate: true, duration: 1});
+                i++;
+             }
+          }, 2000);
+       }
+    } catch(e) {
+       console.error("OSRM Tracking API failed", e);
+    }
   },
   
   renderOrders() {
