@@ -1,1301 +1,240 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" data-theme="dark">
+<html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5.0"/>
-<meta name="description" content="Foodgasm – Premium food delivery. Order from the best restaurants near you."/>
-<meta name="theme-color" content="#FF4500"/>
-<meta name="keywords" content="food delivery, restaurants, order food online, fast delivery"/>
-<meta property="og:title" content="Foodgasm – Premium Food Delivery"/>
-<meta property="og:description" content="Order from the best restaurants near you with lightning-fast delivery."/>
-<meta property="og:type" content="website"/>
-<link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23FF4500'/%3E%3Ctext y='.85em' font-size='55' font-weight='900' font-family='sans-serif' fill='white' text-anchor='middle' x='50'%3EFG%3C/text%3E%3C/svg%3E"/>
-<title>Foodgasm – Premium Food Delivery</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
-<link rel="icon" type="image/png" href="favicon.ico"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Foodgasm - Premium Food Delivery</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#FF5E3A',
+            brandDark: '#e04e2c',
+            bgDark: '#1D2128',
+            panelDark: '#16191E',
+            bgLight: '#F5F7FA',
+            panelLight: '#185A6B',
+          }
+        }
+      }
+    }
+  </script>
 
-<!-- Leaflet.js for Live Delivery Tracking Map Radar -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- Chart.js for admin revenue charts -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-<!-- Razorpay Payment -->
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
-<link rel="stylesheet" href="css/style.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    body { font-family: 'Inter', sans-serif; overflow: hidden; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    .hidden { display: none !important; }
+  </style>
 </head>
-<body>
+<body class="selection:bg-brand selection:text-white h-screen w-full flex text-white" id="app-body">
 
-<!-- ===== RECRUITER QUICK-TEST BAR ===== -->
-<aside id="recruiter-bar" class="recruiter-bar" aria-label="Recruiter Quick Access Bar">
-  <div class="container recruiter-inner">
-    <div class="recruiter-title">
-      <span class="recruiter-pulse"></span>
-      <span class="recruiter-badge">RECRUITER DEMO MODE</span>
-      <span class="recruiter-desc">1-Click Test All Roles:</span>
-    </div>
-    <div class="recruiter-actions">
-      <button class="recruiter-btn" onclick="quickLoginDemo('customer')" title="Login as Aditya Roy (Customer)">👤 Customer</button>
-      <button class="recruiter-btn" onclick="quickLoginDemo('owner')" title="Login as Rajesh Sharma (Restaurant Partner)">🏪 Restaurant Partner</button>
-      <button class="recruiter-btn" onclick="quickLoginDemo('rider')" title="Login as Vikram Singh (Delivery Rider)">🛵 Delivery Rider</button>
-      <button class="recruiter-btn" onclick="quickLoginDemo('admin')" title="Login as Bitan Chakraborty (Admin)">👑 Admin</button>
-      <button class="recruiter-btn btn-ghost" onclick="resetDemoSession()" title="Logout and browse as guest">🔄 Guest</button>
-    </div>
-  </div>
-</aside>
-
-<a href="#main-content" class="skip-link">Skip to main content</a>
-
-<!-- ===== APP LOADER ===== -->
-<div id="app-loader" role="status" aria-label="Loading Foodgasm">
-  <div class="loader-logo">Foodgasm</div>
-  <div class="loader-dots">
-    <span></span><span></span><span></span>
-  </div>
-</div>
-
-<!-- ===== TOAST CONTAINER ===== -->
-<div id="toast-container" aria-live="polite" aria-label="Notifications"></div>
-
-<!-- ===== SCROLL TO TOP ===== -->
-<button id="scroll-top" aria-label="Scroll to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-<button id="chatbot-fab" aria-label="Open Foodie AI chatbot" onclick="openChatbot()" style="position:fixed;bottom:calc(var(--bottom-nav-h) + 16px);right:20px;z-index:900;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(255,69,0,0.55);font-size:1.5rem;transition:transform 0.2s,box-shadow 0.2s;border:none;cursor:pointer" onmouseover="this.style.transform='scale(1.12)';this.style.boxShadow='0 6px 32px rgba(255,69,0,0.7)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 24px rgba(255,69,0,0.55)'">🤖</button>
-
-<!-- ===== PWA INSTALL BANNER ===== -->
-<div id="pwa-install" role="complementary">
-  <span style="font-size:1.8rem;font-weight:800;color:var(--brand)">FG</span>
-  <div class="pwa-text">
-    <div class="pwa-title" data-i18n="pwa_title">Deploy Foodgasm to Home Node</div>
-    <div class="pwa-sub" data-i18n="pwa_sub">Instant access · Offline mode · Zero latency</div>
-  </div>
-  <button class="btn btn-primary btn-sm" id="pwa-install-btn" data-i18n="install">Install</button>
-  <button class="btn btn-secondary btn-sm" id="pwa-dismiss" style="padding:8px 10px">✕</button>
-</div>
-
-<!-- ===== NAVBAR ===== -->
-<header role="banner">
-<nav id="navbar" role="navigation" aria-label="Main navigation">
-  <div class="container nav-inner">
-    <button class="nav-logo" onclick="navigateTo('home')" aria-label="Foodgasm Home">
-      <span class="nav-logo-emoji" style="font-size:1rem;background:var(--brand);color:#fff;border-radius:6px;padding:2px 6px;font-weight:900">FG</span>
-      Food<span>gasm</span>
-    </button>
-
-    <button class="nav-location" id="nav-location-btn" onclick="openModal('location-modal')" aria-label="Change delivery location">
-      <span class="pin" style="font-size:0.8rem">&#9679;</span>
-      <span class="city" id="location-city">New York</span>
-      <span>▾</span>
-    </button>
-
-    <div class="nav-search" role="search">
-      <span class="search-icon" aria-hidden="true" style="font-size:0.9rem">&#9906;</span>
-      <input type="search" placeholder="Search food, restaurants..." id="nav-search-input"
-             aria-label="Search" autocomplete="off"
-             onkeydown="if(event.key==='Enter'){navigateTo('search');setTimeout(()=>{const el=document.getElementById('main-search-input');if(el){el.value=this.value;handleSearch(this.value);}},100)}"
-             oninput="if(this.value.length>1){navigateTo('search');setTimeout(()=>{const el=document.getElementById('main-search-input');if(el){el.value=this.value;handleSearch(this.value);}},100)}"/>
-    </div>
-
-    <div class="nav-actions">
-      <button class="nav-btn" onclick="navigateTo('wishlist')" aria-label="Wishlist" title="Wishlist" style="position:relative">
-        &#9825;
-        <span class="badge" id="wishlist-badge" style="display:none">0</span>
-      </button>
-      <button class="nav-btn" id="nav-cart-btn" onclick="navigateTo('cart')" aria-label="Cart">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-        <span class="badge" id="cart-badge" style="display:none">0</span>
-      </button>
-      <button class="nav-btn" id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark/light mode">
-        &#9790;
-      </button>
-      <div style="position:relative">
-        <button class="nav-btn lang-selector" id="lang-btn" onclick="toggleLangDropdown()" aria-label="Change language" aria-expanded="false">
-          <span id="current-flag">IN</span>
-          <span id="current-lang-code" style="font-size:0.7rem">EN</span>
-        </button>
-        <div class="lang-dropdown hidden" id="lang-dropdown" role="listbox" aria-label="Language selection"></div>
+  <!-- ================= SIDEBAR ================= -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 transform -translate-x-full lg:translate-x-0 lg:static flex flex-col justify-between py-6 bg-panelDark transition-colors duration-300">
+    <div class="space-y-8">
+      <div class="flex items-center justify-between px-8">
+        <span class="font-black text-2xl tracking-tight cursor-pointer text-brand" id="logo-text" onclick="app.switchTab('home')">
+          Foodgasm
+        </span>
       </div>
-      <button class="nav-btn" id="nav-auth-btn" onclick="navigateTo(STATE.user?.id ? 'profile' : 'auth')" aria-label="Profile or Login">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-      </button>
+      
+      <nav class="space-y-2" id="nav-menu">
+        <!-- Rendered by JS -->
+      </nav>
     </div>
-  </div>
-</nav>
-</header>
+  </aside>
 
-<!-- ===== SIDEBAR ===== -->
-<aside id="sidebar" role="complementary" aria-label="Sidebar navigation">
-  <a class="sidebar-link active" data-page="home" onclick="navigateTo('home')" aria-label="Home">
-    <span class="sidebar-icon">&#8962;</span><span data-i18n="home">Home</span>
-  </a>
-  <a class="sidebar-link" data-page="restaurants" onclick="navigateTo('restaurants')" aria-label="Restaurants">
-    <span class="sidebar-icon">&#9783;</span><span data-i18n="restaurants">Restaurants</span>
-  </a>
-  <a class="sidebar-link" data-page="search" onclick="navigateTo('search')" aria-label="Search">
-    <span class="sidebar-icon">&#9906;</span><span data-i18n="search">Search</span>
-  </a>
-  <a class="sidebar-link" data-page="cart" onclick="navigateTo('cart')" aria-label="Cart">
-    <span class="sidebar-icon">&#9783;</span><span data-i18n="cart">Cart</span>
-    <span class="sidebar-badge" id="sidebar-cart-badge" style="display:none">0</span>
-  </a>
-  <a class="sidebar-link" data-page="orders" onclick="navigateTo('orders')" aria-label="Orders">
-    <span class="sidebar-icon">&#9783;</span><span data-i18n="orders">Orders</span>
-  </a>
-  <a class="sidebar-link" data-page="wishlist" onclick="navigateTo('wishlist')" aria-label="Wishlist">
-    <span class="sidebar-icon">&#9825;</span><span data-i18n="wishlist">Wishlist</span>
-  </a>
-  <div class="divider" style="margin:12px 4px"></div>
-  <a class="sidebar-link" data-page="profile" onclick="navigateTo('profile')" aria-label="Profile">
-    <span class="sidebar-icon">&#9786;</span><span data-i18n="profile">Profile</span>
-  </a>
-  <a class="sidebar-link" data-page="settings" onclick="navigateTo('settings')" aria-label="Settings">
-    <span class="sidebar-icon">&#9881;</span><span data-i18n="settings">Settings</span>
-  </a>
-  <a class="sidebar-link" data-page="mood" onclick="navigateTo('mood')" aria-label="Mood Discovery">
-    <span class="sidebar-icon">&#9788;</span><span>Mood</span>
-  </a>
-  <a class="sidebar-link" data-page="budget" onclick="navigateTo('budget')" aria-label="Budget Finder">
-    <span class="sidebar-icon">&#9776;</span><span>Budget</span>
-  </a>
-  <a class="sidebar-link" data-page="trending" onclick="navigateTo('trending')" aria-label="Trending">
-    <span class="sidebar-icon">&#9650;</span><span>Trending</span>
-  </a>
-  <a class="sidebar-link" data-page="admin" onclick="navigateTo('admin')" aria-label="Admin Dashboard">
-    <span class="sidebar-icon">&#9776;</span><span data-i18n="admin">Admin</span>
-  </a>
-</aside>
-
-<!-- ===== MAIN CONTENT ===== -->
-<main id="main-content" role="main">
-
-<!-- ============ HOME PAGE ============ -->
-<section id="page-home" class="page active">
-
-  <!-- ===== 1. HERO CINEMATIC SECTION ===== -->
-  <div class="cinematic-section" id="cin-hero">
-    <div class="cinematic-bg" style="background-image:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&fit=crop')"></div>
-    <div class="cinematic-overlay"></div>
-    <div class="cinematic-content container" style="text-align:left">
-      <div style="max-width:680px">
-        <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(255,69,0,0.25);border:1px solid rgba(255,69,0,0.5);border-radius:99px;font-size:0.75rem;font-weight:700;color:#fff;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:20px">
-          ⚡ Fast Delivery · Everywhere
-        </div>
-        <h1 class="cin-hero-headline">SCAN.<br><em>ORDER.</em><br>DEVOUR.</h1>
-        <p class="cin-hero-sub">Hundreds of restaurants, one craving. Fresh food engineered for your moment — at your door in 30 minutes or less.</p>
-        <div class="cin-search-bar" role="search">
-          <input type="search" id="hero-search-input" placeholder="Search pizza, biryani, sushi…" autocomplete="off" aria-label="Search food"/>
-          <button class="cin-search-bar-btn" onclick="handleHeroSearch()" aria-label="Search">Search</button>
-        </div>
-        <div style="display:flex;gap:28px;margin-top:32px;flex-wrap:wrap">
-          <div>
-            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;color:#fff;line-height:1">500+</div>
-            <div style="font-size:0.72rem;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.06em;margin-top:3px">Restaurants</div>
+  <!-- ================= MAIN TABS CONTAINER ================= -->
+  <div id="main-container" class="flex-1 flex overflow-hidden">
+    
+    <!-- ================= HOME TAB ================= -->
+    <div id="tab-home" class="flex-1 flex w-full relative bg-bgDark">
+      <div class="flex-1 flex flex-col overflow-y-auto w-full relative pb-10">
+        
+        <header class="flex items-center justify-between px-4 lg:px-8 py-4 sticky top-0 bg-bgDark/90 backdrop-blur-md z-20">
+          <div class="relative w-full max-w-sm">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500"></i>
+            <input type="text" placeholder="Search" id="search-input" onkeyup="app.filterDishes()" class="w-full pl-10 pr-4 py-2 rounded-full bg-panelDark text-white border border-white/5 focus:outline-none text-sm" />
           </div>
-          <div>
-            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;color:#fff;line-height:1">30<span style="font-size:1rem">min</span></div>
-            <div style="font-size:0.72rem;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.06em;margin-top:3px">Delivery ETA</div>
+          <div class="flex items-center gap-4 hidden lg:flex">
+             <i data-lucide="bell" class="w-5 h-5 text-zinc-400"></i>
+             <div class="w-8 h-8 rounded-full overflow-hidden border border-brand cursor-pointer">
+               <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="User" />
+             </div>
           </div>
-          <div>
-            <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:800;color:#fff;line-height:1">4.8★</div>
-            <div style="font-size:0.72rem;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.06em;margin-top:3px">Avg. Rating</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Auth banner inside hero content flow -->
-    <div id="home-auth-banner" style="display:none;position:absolute;bottom:90px;left:50%;transform:translateX(-50%);width:calc(100% - 48px);max-width:600px;z-index:3;background:rgba(255,255,255,0.1);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.2);border-radius:var(--radius-lg);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div>
-        <div style="font-family:var(--font-display);font-size:1rem;font-weight:800;color:#fff">⬡ Welcome to Foodgasm</div>
-        <div style="font-size:0.8rem;color:rgba(255,255,255,0.75);margin-top:3px">Log in to track orders & unlock exclusive offers.</div>
-      </div>
-      <div style="display:flex;gap:8px;flex-shrink:0">
-        <button class="cin-btn-primary" style="padding:10px 20px;font-size:0.85rem" onclick="navigateTo('auth')">🔐 Login</button>
-      </div>
-    </div>
-    <div class="cin-scroll-indicator" onclick="document.getElementById('cin-categories').scrollIntoView({behavior:'smooth'})">
-      <span style="font-size:0.7rem;letter-spacing:0.1em">SCROLL</span>
-      <div class="cin-scroll-arrow">▼</div>
-    </div>
-  </div>
+        </header>
 
-  <!-- ===== 2. CATEGORIES CINEMATIC SECTION ===== -->
-  <div class="cinematic-section" id="cin-categories">
-    <div class="cinematic-bg" style="background-image:url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1600&fit=crop')"></div>
-    <div class="cinematic-overlay"></div>
-    <div class="cinematic-content container">
-      <div class="cin-section-label">Category Matrix</div>
-      <h2 class="cin-section-title">Select your <span class="accent">signal.</span></h2>
-      <p class="cin-section-sub">Tap a food category. Our neural engine maps the nearest top-rated restaurants to your coordinates.</p>
-      <!-- Category chips — single source of truth for filtering -->
-      <div class="cin-chip-row" id="cin-cat-chips" role="list" aria-label="Category chips"></div>
-      <!-- Filtered foods grid -->
-      <div id="home-foods" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-top:8px"></div>
-    </div>
-  </div>
-
-  <!-- ===== 3. TRENDING NOW CINEMATIC SECTION ===== -->
-  <div class="cinematic-section" id="cin-trending">
-    <div class="cinematic-bg" style="background-image:url('https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=1600&fit=crop')"></div>
-    <div class="cinematic-overlay"></div>
-    <div class="cinematic-content container">
-      <div class="cin-section-label">// Live Feed</div>
-      <h2 class="cin-section-title" style="background:linear-gradient(90deg,#fff 0%,#FF6B35 60%,#FFB347 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Trending Now</h2>
-      <p class="cin-section-sub">Real-time order data. These dishes are being queued across your city right now.</p>
-      <div class="trending-scroll" id="trending-row" role="list" aria-label="Trending foods"></div>
-      <div style="margin-top:24px">
-        <button class="cin-btn-secondary" onclick="navigateTo('search')" style="font-size:0.9rem;padding:12px 28px">See All Trending →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== 4. RESTAURANTS CINEMATIC SECTION ===== -->
-  <div class="cinematic-section" id="cin-restaurants">
-    <div class="cinematic-bg" style="background-image:url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&fit=crop')"></div>
-    <div class="cinematic-overlay"></div>
-    <div class="cinematic-content container">
-      <div class="cin-section-label">Proximity Scan</div>
-      <h2 class="cin-section-title">Top Nodes <span class="accent">Near You</span></h2>
-      <p class="cin-section-sub">AI-ranked by quality index, speed rating, and proximity to your drop zone.</p>
-      <div id="home-restaurants" role="list" aria-label="Restaurants"></div>
-      <div style="margin-top:28px">
-        <button class="cin-btn-secondary" onclick="navigateTo('restaurants')" style="font-size:0.9rem;padding:12px 28px">View All Restaurants →</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== 5. PROMO / CTA CINEMATIC SECTION ===== -->
-  <div class="cinematic-section" id="cin-promo">
-    <div class="cinematic-bg" style="background-image:url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&fit=crop')"></div>
-    <div class="cinematic-overlay cin-promo-overlay"></div>
-    <!-- Floating emoji field -->
-    <div class="cin-emoji-field" aria-hidden="true">
-      <span class="cin-float-emoji" style="top:12%;left:6%;animation-delay:0s">🍕</span>
-      <span class="cin-float-emoji" style="top:20%;right:8%;animation-delay:0.8s;font-size:1.6rem">🍣</span>
-      <span class="cin-float-emoji" style="top:60%;left:4%;animation-delay:1.4s;font-size:1.8rem">🍔</span>
-      <span class="cin-float-emoji" style="top:70%;right:5%;animation-delay:0.4s;font-size:2.5rem">🌮</span>
-      <span class="cin-float-emoji" style="top:40%;left:88%;animation-delay:2s;font-size:1.4rem">🍜</span>
-      <span class="cin-float-emoji" style="top:85%;left:18%;animation-delay:1s;font-size:1.5rem">🧁</span>
-      <span class="cin-float-emoji" style="top:10%;left:50%;animation-delay:1.8s;font-size:1.3rem">🥗</span>
-    </div>
-    <div class="cinematic-content container" style="text-align:center">
-      <div style="max-width:640px;margin:0 auto">
-        <div class="cin-promo-tag">⬡ Limited Time · First Order</div>
-        <div class="cin-promo-headline">GET <span>50% OFF</span><br>Your First Order</div>
-        <p class="cin-promo-sub">Use code <strong style="color:#FFB347;letter-spacing:0.08em;font-family:var(--font-display);font-size:0.9em">FOODGASM50</strong> at checkout. Fresh food, unbeatable price.</p>
-        <div class="cin-cta-row" style="justify-content:center">
-          <button class="cin-btn-primary" onclick="applyPromo('FOODGASM50');navigateTo('search')">Order Now</button>
-          <button class="cin-btn-secondary" onclick="navigateTo('restaurants')">View All Restaurants</button>
-        </div>
-        <!-- Discover More mini-grid -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:44px;max-width:580px;margin-left:auto;margin-right:auto">
-          <div onclick="navigateTo('mood')" style="background:rgba(255,69,0,0.2);backdrop-filter:blur(10px);border:1px solid rgba(255,69,0,0.35);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
-            <div style="font-size:1.4rem;margin-bottom:6px">🌈</div>
-            <div style="font-size:0.85rem;font-weight:700;color:#fff;font-family:var(--font-alt)">Mood Engine</div>
-          </div>
-          <div onclick="navigateTo('budget')" style="background:rgba(34,197,94,0.2);backdrop-filter:blur(10px);border:1px solid rgba(34,197,94,0.35);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
-            <div style="font-size:1.4rem;margin-bottom:6px">💰</div>
-            <div style="font-size:0.85rem;font-weight:700;color:#fff;font-family:var(--font-alt)">Budget Core</div>
-          </div>
-          <div onclick="navigateTo('trending')" style="background:rgba(245,158,11,0.2);backdrop-filter:blur(10px);border:1px solid rgba(245,158,11,0.35);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
-            <div style="font-size:1.4rem;margin-bottom:6px">🔥</div>
-            <div style="font-size:0.85rem;font-weight:700;color:#fff;font-family:var(--font-alt)">Live Feed</div>
-          </div>
-          <div onclick="openSmartSearch()" style="background:rgba(59,130,246,0.2);backdrop-filter:blur(10px);border:1px solid rgba(59,130,246,0.35);border-radius:var(--radius-lg);padding:16px;cursor:pointer;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1)" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'">
-            <div style="font-size:1.4rem;margin-bottom:6px">🔍</div>
-            <div style="font-size:0.85rem;font-weight:700;color:#fff;font-family:var(--font-alt)">Neural Search</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Veg filter buttons (off-screen, used by JS) -->
-  <div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">
-    <div id="veg-filter-row">
-      <button id="vegf-all" onclick="setVegFilter('all')">All</button>
-      <button id="vegf-veg" onclick="setVegFilter('veg')">Veg</button>
-      <button id="vegf-nonveg" onclick="setVegFilter('nonveg')">Non-Veg</button>
-    </div>
-  </div>
-
-</section>
-
-<!-- ============ MOOD DISCOVERY PAGE ============ -->
-<section id="page-mood" class="page">
-  <div class="container">
-    <div class="page-top">
-      <h1 class="page-title">Mood Engine</h1>
-      <p style="color:var(--text-2);font-size:0.9rem;margin-top:4px">How are you feeling right now?</p>
-    </div>
-    <div id="mood-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:28px"></div>
-    <div id="mood-results" style="display:none">
-      <div class="section-header" style="margin-bottom:16px">
-        <h2 class="section-title" id="mood-results-title">Recommended for You</h2>
-      </div>
-      <div class="food-grid" id="mood-food-grid" role="list"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ BUDGET FINDER PAGE ============ -->
-<section id="page-budget" class="page">
-  <div class="container">
-    <div class="page-top">
-      <h1 class="page-title">Budget Core</h1>
-      <p style="color:var(--text-2);font-size:0.9rem;margin-top:4px">Best meals within your budget</p>
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
-      <button class="chip active" data-budget="100" onclick="selectBudget(100,this)">Under Rs.100</button>
-      <button class="chip" data-budget="150" onclick="selectBudget(150,this)">Under Rs.150</button>
-      <button class="chip" data-budget="250" onclick="selectBudget(250,this)">Under Rs.250</button>
-      <button class="chip" data-budget="500" onclick="selectBudget(500,this)">Under Rs.500</button>
-    </div>
-    <div id="budget-results-title" style="font-size:0.8rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:14px">Meals under Rs.100</div>
-    <div class="food-grid" id="budget-food-grid" role="list"></div>
-  </div>
-</section>
-
-<!-- ============ TRENDING PAGE ============ -->
-<section id="page-trending" class="page">
-  <div class="container">
-    <div class="page-top">
-      <h1 class="page-title">Live Feed</h1>
-    </div>
-    <div class="section" style="margin-bottom:0">
-      <div class="section-header"><h2 class="section-title">Trending Cycles</h2></div>
-      <div class="food-grid" id="trending-today-grid" role="list"></div>
-    </div>
-    <div class="section" style="margin-bottom:0">
-      <div class="section-header"><h2 class="section-title">Most Queued</h2></div>
-      <div class="food-grid" id="most-ordered-grid" role="list"></div>
-    </div>
-    <div class="section">
-      <div class="section-header"><h2 class="section-title">// Proximity Hotspots</h2></div>
-      <div class="food-grid" id="popular-near-grid" role="list"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ SMART SEARCH PAGE (extends existing search) ============ -->
-
-<!-- ============ RESTAURANTS PAGE ============ -->
-<section id="page-restaurants" class="page">
-  <div class="container">
-    <div class="page-top">
-      <h1 class="page-title" data-i18n="all_restaurants">Restaurant Grid</h1>
-    </div>
-    <div class="filter-bar" id="restaurant-filters" role="group" aria-label="Restaurant filters"></div>
-    <div class="chips-row" id="cuisine-chips" style="margin-bottom:20px" role="group" aria-label="Cuisine type"></div>
-    <div class="restaurant-grid" id="all-restaurants" role="list" aria-label="All restaurants"></div>
-  </div>
-</section>
-
-<!-- ============ MENU PAGE ============ -->
-<section id="page-menu" class="page">
-  <div class="container">
-    <button class="btn btn-secondary btn-sm" onclick="navigateTo('restaurants')" style="margin:16px 0 0;gap:6px">
-      ← <span data-i18n="back">Back</span>
-    </button>
-    <div id="menu-restaurant-header" class="menu-restaurant-header" style="margin-top:16px"></div>
-    <div class="chips-row" id="menu-category-chips" style="margin-bottom:20px" role="group" aria-label="Menu categories"></div>
-    <div class="food-grid" id="menu-food-grid" role="list" aria-label="Menu items"></div>
-  </div>
-</section>
-
-<!-- ============ SEARCH PAGE ============ -->
-<section id="page-search" class="page">
-  <div class="container">
-    <div class="search-bar-big" role="search">
-      <span aria-hidden="true">&#128269;</span>
-      <input type="search" id="main-search-input" data-i18n-placeholder="search_placeholder"
-             placeholder="Search food, restaurants, cuisines..." autocomplete="off"
-             aria-label="Search" oninput="handleSearch(this.value)"/>
-      <button class="search-clear" id="search-clear" onclick="clearSearch()" aria-label="Clear search">✕</button>
-    </div>
-    <div class="filter-bar" id="search-filters" role="group" aria-label="Search filters"></div>
-    <div id="search-results">
-      <!-- Recent searches -->
-      <div id="recent-searches-section">
-        <div class="section-header">
-          <h3 class="section-title" style="font-size:1rem" data-i18n="recent_searches">Recent Searches</h3>
-          <button class="section-link" onclick="clearRecentSearches()" data-i18n="clear">Clear</button>
-        </div>
-        <div id="recent-searches-list"></div>
-      </div>
-      <!-- Results -->
-      <div id="search-results-list" aria-live="polite" aria-atomic="false" role="region" aria-label="Search results"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ CART PAGE ============ -->
-<section id="page-cart" class="page">
-  <div class="container">
-    <h1 class="page-title" data-i18n="your_cart">Your Cart</h1>
-    <div id="cart-content">
-      <div class="cart-empty" id="cart-empty">
-        <span class="cart-empty-emoji" aria-hidden="true">&#128722;</span>
-        <h2 class="cart-empty-title" data-i18n="cart_empty">Your cart is empty</h2>
-        <p class="cart-empty-sub" data-i18n="cart_empty_sub">Nothing loaded yet. Pick something delicious and start your order.</p>
-        <button class="btn btn-primary" onclick="navigateTo('home')" style="margin-top:8px" data-i18n="browse_food">Browse Food</button>
-      </div>
-      <div id="cart-items-list"></div>
-      <div id="cart-summary-section" style="display:none">
-        <div class="cart-summary" id="cart-summary">
-          <div class="cart-summary-title" data-i18n="order_summary">Order Summary</div>
-          <div class="summary-row">
-            <span data-i18n="subtotal">Subtotal</span>
-            <span id="cart-subtotal">$0.00</span>
-          </div>
-          <div class="summary-row">
-            <span data-i18n="delivery_fee">Delivery Fee</span>
-            <span id="cart-delivery">$2.99</span>
-          </div>
-          <div class="summary-row">
-            <span data-i18n="taxes">Taxes</span>
-            <span id="cart-tax">$0.00</span>
-          </div>
-          <div class="summary-row" id="cart-discount-row" style="display:none">
-            <span data-i18n="discount">Discount</span>
-            <span id="cart-discount" style="color:var(--green)">-$0.00</span>
-          </div>
-          <div class="summary-coupon">
-            <input type="text" id="coupon-input" data-i18n-placeholder="enter_coupon" placeholder="Enter coupon code" autocomplete="off" aria-label="Coupon code"/>
-            <button onclick="applyCoupon()" data-i18n="apply">Apply</button>
-          </div>
-          <div class="summary-row total">
-            <span data-i18n="total">Total</span>
-            <span id="cart-total">$0.00</span>
-          </div>
-        </div>
-        <button class="btn btn-primary btn-full btn-lg" onclick="proceedToCheckoutGuarded()" style="margin-top:14px" data-i18n="proceed_checkout">
-          Proceed to Checkout →
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ CHECKOUT PAGE ============ -->
-<section id="page-checkout" class="page">
-  <div class="container">
-    <h1 class="page-title" data-i18n="checkout">Checkout</h1>
-
-    <!-- Delivery Address -->
-    <div class="checkout-section">
-      <div class="checkout-section-title">
-        <span>1</span><span data-i18n="delivery_address">Delivery Address</span>
-      </div>
-      <div class="address-card active" id="selected-address">
-        <div class="address-icon">H</div>
-        <div>
-          <div class="address-type" data-i18n="home">Home</div>
-          <div class="address-text">123 Food Street, Flavor Town, NY 10001</div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" data-i18n="full_name">Full Name</label>
-          <input type="text" class="form-input" id="co-name" data-i18n-placeholder="your_name" placeholder="Your name" aria-label="Full name"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label" data-i18n="phone">Phone</label>
-          <input type="tel" class="form-input" id="co-phone" placeholder="+91 98765 43210" aria-label="Phone number"/>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="address">Address</label>
-        <input type="text" class="form-input" id="co-address" data-i18n-placeholder="enter_address" placeholder="Street address" aria-label="Address"/>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" data-i18n="city">City</label>
-          <input type="text" class="form-input" id="co-city" placeholder="City" aria-label="City"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label" data-i18n="zip">ZIP Code</label>
-          <input type="text" class="form-input" id="co-zip" placeholder="ZIP / Post code" aria-label="ZIP code"/>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="delivery_notes">Delivery Notes (optional)</label>
-        <input type="text" class="form-input" id="co-notes" data-i18n-placeholder="notes_placeholder" placeholder="e.g. Leave at the door" aria-label="Delivery notes"/>
-      </div>
-    </div>
-
-    <!-- Delivery Time -->
-    <div class="checkout-section">
-      <div class="checkout-section-title">
-        <span>2</span><span data-i18n="delivery_time">Delivery Time</span>
-      </div>
-      <div class="chips-row" id="time-chips" role="group" aria-label="Delivery time options"></div>
-    </div>
-
-    <!-- Payment -->
-    <div class="checkout-section">
-      <div class="checkout-section-title">
-        <span>3</span><span data-i18n="payment_method">Payment Method</span>
-      </div>
-      <div id="payment-options"></div>
-    </div>
-
-    <!-- Order Summary -->
-    <div class="checkout-section">
-      <div class="checkout-section-title">
-        <span>4</span><span data-i18n="order_summary">Order Summary</span>
-      </div>
-      <div id="checkout-items-preview"></div>
-      <div class="divider"></div>
-      <div class="summary-row"><span data-i18n="subtotal">Subtotal</span><span id="co-subtotal">$0.00</span></div>
-      <div class="summary-row"><span data-i18n="delivery_fee">Delivery Fee</span><span id="co-delivery">$2.99</span></div>
-      <div class="summary-row"><span data-i18n="taxes">Taxes</span><span id="co-tax">$0.00</span></div>
-      <div class="summary-row total"><span data-i18n="total">Total</span><span id="co-total">$0.00</span></div>
-    </div>
-
-    <button class="btn btn-primary btn-full btn-lg" id="place-order-btn" onclick="placeOrder()" data-i18n="place_order">
-      <span class="btn-text">Place Order</span>
-      <span class="btn-spinner"></span>
-    </button>
-    <p style="text-align:center;font-size:0.75rem;color:var(--text-3);margin-top:12px" data-i18n="secure_payment">
-      ⬡ Secured & encrypted payment
-    </p>
-  </div>
-</section>
-
-<!-- ============ ORDERS PAGE ============ -->
-<section id="page-orders" class="page">
-  <div class="container">
-    <h1 class="page-title" data-i18n="my_orders">My Orders</h1>
-    <div class="chips-row" id="order-filter-chips" style="margin-bottom:20px" role="group" aria-label="Order filters"></div>
-    <div id="orders-list" role="list" aria-label="Order history"></div>
-  </div>
-</section>
-
-<!-- ============ WISHLIST PAGE ============ -->
-<section id="page-wishlist" class="page">
-  <div class="container">
-    <h1 class="page-title" data-i18n="wishlist">Wishlist</h1>
-    <div id="wishlist-content"></div>
-  </div>
-</section>
-
-<!-- ============ PROFILE PAGE ============ -->
-<section id="page-profile" class="page">
-  <div class="profile-header" role="banner">
-    <div class="profile-avatar" aria-label="Profile picture" style="font-size:1.5rem;display:flex;align-items:center;justify-content:center">&#128100;</div>
-    <div class="profile-name" id="profile-name">Alex Johnson</div>
-    <div class="profile-email" id="profile-email">alex@example.com</div>
-  </div>
-  <div class="container">
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0">
-      <div style="background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px;text-align:center;cursor:pointer" onclick="navigateTo('orders')">
-        <div style="font-size:1.5rem;font-weight:800;color:var(--brand);font-family:var(--font-display)" id="stat-orders">12</div>
-        <div style="font-size:0.72rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px" data-i18n="orders">Orders</div>
-      </div>
-      <div style="background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px;text-align:center;cursor:pointer" onclick="navigateTo('wishlist')">
-        <div style="font-size:1.5rem;font-weight:800;color:var(--brand);font-family:var(--font-display)" id="stat-wishlist">8</div>
-        <div style="font-size:0.72rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px" data-i18n="wishlist">Wishlist</div>
-      </div>
-      <div style="background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);padding:16px;text-align:center">
-        <div style="font-size:1.5rem;font-weight:800;color:var(--brand);font-family:var(--font-display)">240</div>
-        <div style="font-size:0.72rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px" data-i18n="points">Points</div>
-      </div>
-    </div>
-    <div class="profile-menu" role="list">
-      <div class="profile-menu-item" onclick="navigateTo('orders')" role="listitem">
-        <div class="profile-menu-icon" aria-hidden="true">&#128230;</div>
-        <span class="profile-menu-label" data-i18n="my_orders">My Orders</span>
-        <span class="profile-menu-arrow">›</span>
-      </div>
-      <div class="profile-menu-item" onclick="navigateTo('wishlist')" role="listitem">
-        <div class="profile-menu-icon" aria-hidden="true">♡</div>
-        <span class="profile-menu-label" data-i18n="wishlist">Wishlist</span>
-        <span class="profile-menu-arrow">›</span>
-      </div>
-      <div class="profile-menu-item" onclick="loadAddresses();openModal('address-modal')" role="listitem">
-        <div class="profile-menu-icon" aria-hidden="true">&#128205;</div>
-        <span class="profile-menu-label" data-i18n="saved_addresses">Saved Addresses</span>
-        <span class="profile-menu-arrow">›</span>
-      </div>
-      <div class="profile-menu-item" onclick="openModal('payment-modal')" role="listitem">
-        <div class="profile-menu-icon" aria-hidden="true">&#128179;</div>
-        <span class="profile-menu-label" data-i18n="payment_methods">Payment Methods</span>
-        <span class="profile-menu-arrow">›</span>
-      </div>
-      <div class="profile-menu-item" onclick="navigateTo('settings')" role="listitem">
-        <div class="profile-menu-icon" aria-hidden="true">&#9881;</div>
-        <span class="profile-menu-label" data-i18n="settings">Settings</span>
-        <span class="profile-menu-arrow">›</span>
-      </div>
-      <div class="profile-menu-item" onclick="navigateTo('admin')" role="listitem">
-        <div class="profile-menu-icon" aria-hidden="true">&#128737;</div>
-        <span class="profile-menu-label" data-i18n="admin_dashboard">Admin Dashboard</span>
-        <span class="profile-menu-arrow">›</span>
-      </div>
-      <div class="profile-menu-item" onclick="handleLogout()" role="listitem" style="color:var(--red)">
-        <div class="profile-menu-icon" aria-hidden="true" style="color:var(--red)">&#128682;</div>
-        <span class="profile-menu-label" style="color:var(--red)" data-i18n="logout">Logout</span>
-        <span class="profile-menu-arrow">›</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ SETTINGS PAGE ============ -->
-<section id="page-settings" class="page">
-  <div class="container">
-    <h1 class="page-title" data-i18n="settings">Settings</h1>
-
-    <!-- Profile Edit Section -->
-    <div class="settings-section" id="profile-edit-section">
-      <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-3);margin-bottom:12px">Edit Profile</div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="full_name">Full Name</label>
-        <input type="text" class="form-input" id="profile-edit-name" placeholder="Your full name" autocomplete="name" aria-label="Full name"/>
-      </div>
-      <div class="form-group">
-        <label class="form-label" data-i18n="phone">Phone</label>
-        <input type="tel" class="form-input" id="profile-edit-phone" placeholder="+91 98765 43210" autocomplete="tel" aria-label="Phone number"/>
-      </div>
-      <button class="btn btn-primary btn-full" id="profile-save-btn" onclick="updateProfile()">Save Profile</button>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-item">
-        <div>
-          <div class="settings-label" data-i18n="dark_mode">Dark Mode</div>
-          <div class="settings-sub" data-i18n="dark_mode_sub">Toggle dark/light theme</div>
-        </div>
-        <label class="toggle-switch" aria-label="Toggle dark mode">
-          <input type="checkbox" id="dark-mode-toggle" onchange="toggleTheme()" checked/>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-      <div class="settings-item">
-        <div>
-          <div class="settings-label" data-i18n="notifications">Notifications</div>
-          <div class="settings-sub" data-i18n="notif_sub">Order updates, offers</div>
-        </div>
-        <label class="toggle-switch" aria-label="Toggle notifications">
-          <input type="checkbox" checked onchange="showToast('Notifications updated','info','&#128276;')"/>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-      <div class="settings-item">
-        <div>
-          <div class="settings-label" data-i18n="location_services">Location Services</div>
-          <div class="settings-sub" data-i18n="location_sub">For accurate delivery</div>
-        </div>
-        <label class="toggle-switch" aria-label="Toggle location services">
-          <input type="checkbox" checked onchange="showToast('Location settings updated','info','&#10003;')"/>
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-item">
-        <div>
-          <div class="settings-label" data-i18n="language">Language</div>
-          <div class="settings-sub" data-i18n="language_sub">Choose your language</div>
-        </div>
-        <div style="position:relative">
-          <button class="lang-selector" id="settings-lang-btn" onclick="toggleSettingsLang()" aria-label="Change language">
-            <span id="settings-flag">IN</span>
-            <span id="settings-lang-name">English</span>
-            <span>▾</span>
-          </button>
-          <div class="lang-dropdown hidden" id="settings-lang-dropdown" role="listbox"></div>
-        </div>
-      </div>
-      <div class="settings-item">
-        <div>
-          <div class="settings-label" data-i18n="currency">Currency</div>
-          <div class="settings-sub" data-i18n="currency_sub">Default display currency</div>
-        </div>
-        <select class="form-input" id="currency-select" onchange="setCurrency(this.value)" style="width:auto;padding:7px 10px" aria-label="Select currency">
-          <option value="INR" selected>INR ₹</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <div class="settings-item" onclick="openModal('about-modal')" style="cursor:pointer">
-        <div>
-          <div class="settings-label" data-i18n="about">About Foodgasm</div>
-          <div class="settings-sub">Build v1.6.0 · Engineered by Bitan Chakraborty</div>
-        </div>
-        <span style="color:var(--text-3);font-size:0.8rem">›</span>
-      </div>
-      <div class="settings-item" onclick="openModal('terms-modal')">
-        <div>
-          <div class="settings-label" data-i18n="terms">Terms & Privacy</div>
-        </div>
-        <span style="color:var(--text-3);font-size:0.8rem">›</span>
-      </div>
-      <div class="settings-item" onclick="openChatbot()">
-        <div>
-          <div class="settings-label" data-i18n="support">Help & Support</div>
-        </div>
-        <span style="color:var(--text-3);font-size:0.8rem">›</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ LOGIN/SIGNUP PAGE ============ -->
-<section id="page-auth" class="page">
-  <div class="auth-wrapper">
-    <div class="auth-card">
-      <div class="auth-logo">Food<span>gasm</span></div>
-      <div class="auth-logo-sub">🍔 Order food. Fast. Fresh. Delicious.</div>
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="login-tab" onclick="switchAuthTab('login')" data-i18n="login">Login</button>
-        <button class="auth-tab" id="signup-tab" onclick="switchAuthTab('signup')" data-i18n="signup">Sign Up</button>
-      </div>
-
-      <!-- Google OAuth Login -->
-      <button class="social-btn" onclick="handleSocialAuth('Google')" aria-label="Continue with Google" style="padding:14px 18px;font-size:0.95rem;margin-bottom:8px;border:1.5px solid rgba(66,133,244,0.35);background:rgba(66,133,244,0.06);transition:all 0.2s" onmouseover="this.style.background='rgba(66,133,244,0.12)'" onmouseout="this.style.background='rgba(66,133,244,0.06)'">
-        <svg width="20" height="20" viewBox="0 0 24 24" style="flex-shrink:0"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        <span style="font-weight:700;color:var(--text)">Continue with Google</span>
-      </button>
-
-      <div style="display:flex;align-items:center;gap:10px;margin:14px 0 18px">
-        <div style="flex:1;height:1px;background:var(--border-2)"></div>
-        <span style="font-size:0.78rem;color:var(--text-3);font-weight:500">or sign in with email</span>
-        <div style="flex:1;height:1px;background:var(--border-2)"></div>
-      </div>
-
-      <div id="login-form">
-        <div class="form-group">
-          <label class="form-label" data-i18n="email">Email</label>
-          <input type="email" class="form-input" id="login-email" placeholder="you@example.com" autocomplete="email" aria-label="Email address"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label" data-i18n="password">Password</label>
-          <div style="position:relative">
-            <input type="password" class="form-input" id="login-password" placeholder="••••••••" autocomplete="current-password" aria-label="Password"/>
-            <button style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:0.85rem" onclick="togglePasswordVisibility('login-password')" aria-label="Toggle password visibility">&#128065;</button>
-          </div>
-        </div>
-        <div style="text-align:right;margin-bottom:16px">
-          <button style="font-size:0.8125rem;color:var(--brand);font-weight:600" onclick="handleForgotPassword()" data-i18n="forgot_password">Forgot password?</button>
-        </div>
-        <button class="btn btn-primary btn-full btn-lg" id="login-btn" onclick="handleLogin()" data-i18n="login" style="margin-top:4px;font-size:1rem;letter-spacing:0.02em">
-          <span class="btn-text">🔐 Login</span>
-          <span class="btn-spinner"></span>
-        </button>
-      </div>
-
-      <div id="signup-form" style="display:none">
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label" data-i18n="first_name">First Name</label>
-            <input type="text" class="form-input" id="signup-fname" placeholder="First name" autocomplete="given-name" aria-label="First name"/>
-          </div>
-          <div class="form-group">
-            <label class="form-label" data-i18n="last_name">Last Name</label>
-            <input type="text" class="form-input" id="signup-lname" placeholder="Last name" autocomplete="family-name" aria-label="Last name"/>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label" data-i18n="email">Email</label>
-          <input type="email" class="form-input" id="signup-email" placeholder="you@example.com" autocomplete="email" aria-label="Email"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label" data-i18n="phone">Phone</label>
-          <input type="tel" class="form-input" id="signup-phone" placeholder="+91 98765 43210" autocomplete="tel" aria-label="Phone"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label" data-i18n="password">Password</label>
-          <input type="password" class="form-input" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password" aria-label="New password"/>
-        </div>
-        <button class="btn btn-primary btn-full btn-lg" id="signup-btn" onclick="handleSignup()" data-i18n="create_account" style="font-size:1rem;letter-spacing:0.02em">
-          <span class="btn-text">🚀 Create Account</span>
-          <span class="btn-spinner"></span>
-        </button>
-        <p style="font-size:0.75rem;color:var(--text-3);text-align:center;margin-top:12px">
-          <span data-i18n="agree_terms">By signing up, you agree to our</span>
-          <button style="color:var(--brand);font-weight:600" onclick="openModal('terms-modal')">Terms & Privacy</button>
-        </p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ ADMIN PAGE ============ -->
-<section id="page-admin" class="page">
-  <div class="container">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:24px 0 20px">
-      <div>
-        <h1 style="font-size:1.6rem;font-weight:800;color:var(--text)" data-i18n="admin_dashboard">Admin Dashboard</h1>
-        <p style="font-size:0.875rem;color:var(--text-2);margin-top:4px" data-i18n="admin_sub">Manage your platform</p>
-      </div>
-      <button class="btn btn-primary btn-sm" onclick="refreshAdminData()" data-i18n="refresh">Refresh</button>
-    </div>
-
-    <div class="admin-stats" id="admin-stats-grid"></div>
-
-    <div class="admin-table" style="margin-bottom:20px">
-      <div class="admin-table-header">
-        <div class="admin-table-title" data-i18n="recent_orders">Recent Orders</div>
-        <button class="btn btn-secondary btn-sm" onclick="navigateTo('orders')" data-i18n="view_all">View All</button>
-      </div>
-      <div class="admin-table-scroll">
-        <table id="admin-orders-table" aria-label="Recent orders">
-          <caption class="sr-only">Recent Orders</caption>
-          <thead>
-            <tr>
-              <th scope="col" data-i18n="order_id">Order ID</th>
-              <th scope="col" data-i18n="customer">Customer</th>
-              <th scope="col" data-i18n="restaurant">Restaurant</th>
-              <th scope="col" data-i18n="amount">Amount</th>
-              <th scope="col" data-i18n="status">Status</th>
-              <th scope="col" data-i18n="time">Time</th>
-            </tr>
-          </thead>
-          <tbody id="admin-orders-body"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
-      <div class="admin-table">
-        <div class="admin-table-header">
-          <div class="admin-table-title" data-i18n="top_restaurants">Top Restaurants</div>
-        </div>
-        <div id="admin-top-restaurants" style="padding:12px 16px"></div>
-      </div>
-      <div class="admin-table">
-        <div class="admin-table-header">
-          <div class="admin-table-title" data-i18n="popular_items">Popular Items</div>
-        </div>
-        <div id="admin-popular-items" style="padding:12px 16px"></div>
-      </div>
-    </div>
-
-    <!-- Revenue Chart -->
-    <div class="chart-card" style="margin-top:16px">
-      <div class="chart-header">
-        <div class="chart-title">📈 Revenue Over Time</div>
-        <div class="chart-pills">
-          <button class="chart-pill active" onclick="setChartPeriod('7d',this)">7D</button>
-          <button class="chart-pill" onclick="setChartPeriod('30d',this)">30D</button>
-          <button class="chart-pill" onclick="setChartPeriod('90d',this)">90D</button>
-        </div>
-      </div>
-      <div class="chart-wrap"><canvas id="revenue-chart"></canvas></div>
-    </div>
-
-    <!-- Orders by Status + Category split charts row -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px">
-      <div class="chart-card" style="margin-bottom:0">
-        <div class="chart-header">
-          <div class="chart-title">🍕 Orders by Category</div>
-        </div>
-        <div class="chart-wrap" style="height:200px"><canvas id="category-chart"></canvas></div>
-      </div>
-      <div class="chart-card" style="margin-bottom:0">
-        <div class="chart-header">
-          <div class="chart-title">📊 Order Status Breakdown</div>
-        </div>
-        <div class="chart-wrap" style="height:200px"><canvas id="status-chart"></canvas></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<!-- ===== BOTTOM NAV ===== -->
-<footer role="contentinfo" aria-label="Site footer">
-<nav id="bottom-nav" role="navigation" aria-label="Bottom navigation">
-  <button class="bnav-item active" data-page="home" onclick="navigateTo('home')" aria-label="Home">
-    <span class="bnav-icon">&#8962;</span>
-    <span data-i18n="home">Home</span>
-  </button>
-  <button class="bnav-item" data-page="search" onclick="navigateTo('search')" aria-label="Search">
-    <span class="bnav-icon">&#9906;</span>
-    <span data-i18n="search">Search</span>
-  </button>
-  <button class="bnav-item" data-page="cart" onclick="navigateTo('cart')" aria-label="Cart">
-    <span class="bnav-icon">&#9783;</span>
-    <span data-i18n="cart">Cart</span>
-    <span class="badge" id="bnav-cart-badge" style="display:none;position:absolute;top:4px;right:calc(50% - 20px)">0</span>
-  </button>
-  <button class="bnav-item" data-page="orders" onclick="navigateTo('orders')" aria-label="Orders">
-    <span class="bnav-icon">&#9783;</span>
-    <span data-i18n="orders">Orders</span>
-  </button>
-  <button class="bnav-item" data-page="profile" onclick="navigateTo('profile')" aria-label="Profile">
-    <span class="bnav-icon">&#9786;</span>
-    <span data-i18n="profile">Profile</span>
-  </button>
-</nav>
-</footer>
-
-<!-- ===== MODALS ===== -->
-
-<!-- Live Order Timeline Modal -->
-<div id="order-timeline-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('order-timeline-modal')">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 class="modal-title">Live Order Tracking</h2>
-      <button class="modal-close" onclick="closeModal('order-timeline-modal')" aria-label="Close">&#10005;</button>
-    </div>
-    <div class="modal-body">
-      <div id="order-timeline-restaurant" style="font-size:0.85rem;color:var(--text-2);margin-bottom:20px;font-weight:600"></div>
-      <div id="order-timeline-steps" style="position:relative;padding-left:32px"></div>
-      <div style="margin-top:24px;padding:14px;background:var(--surface-2);border-radius:var(--radius);text-align:center">
-        <div style="font-size:0.72rem;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Estimated Delivery</div>
-        <div id="order-eta" style="font-size:1.5rem;font-weight:800;color:var(--brand);margin-top:4px">28 min</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Smart Search Modal -->
-<div id="smart-search-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('smart-search-modal')">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 class="modal-title">Smart Food Search</h2>
-      <button class="modal-close" onclick="closeModal('smart-search-modal')" aria-label="Close">&#10005;</button>
-    </div>
-    <div class="modal-body">
-      <p style="color:var(--text-2);font-size:0.85rem;margin-bottom:14px">Try: "spicy cheap dinner", "healthy meal", "high protein", "budget meal", "late night snack"</p>
-      <div class="search-bar-big" role="search" style="margin-bottom:16px">
-        <span aria-hidden="true">&#128269;</span>
-        <input type="search" id="smart-search-input" placeholder="Describe what you want..." autocomplete="off"
-               aria-label="Smart search" oninput="handleSmartSearch(this.value)" style="font-size:0.9rem"/>
-      </div>
-      <div id="smart-search-tags" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-        <span class="chip" style="cursor:pointer" onclick="setSmartSearch('spicy cheap dinner')">spicy cheap dinner</span>
-        <span class="chip" style="cursor:pointer" onclick="setSmartSearch('healthy meal')">healthy meal</span>
-        <span class="chip" style="cursor:pointer" onclick="setSmartSearch('high protein')">high protein</span>
-        <span class="chip" style="cursor:pointer" onclick="setSmartSearch('budget meal')">budget meal</span>
-        <span class="chip" style="cursor:pointer" onclick="setSmartSearch('late night snack')">late night snack</span>
-      </div>
-      <div id="smart-search-results" class="food-grid" role="list"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Food Detail Modal -->
-<div id="food-detail-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="food-modal-title" onclick="if(event.target===this)closeModal('food-detail-modal')">
-  <div class="modal" style="padding:0">
-    <div id="food-detail-content"></div>
-  </div>
-</div>
-
-<!-- Location Modal -->
-<div id="location-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="location-modal-title" onclick="if(event.target===this)closeModal('location-modal')">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 class="modal-title" id="location-modal-title" data-i18n="set_location">Set Delivery Location</h2>
-      <button class="modal-close" onclick="closeModal('location-modal')" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body">
-      <!-- GPS detect button -->
-      <button class="btn btn-primary btn-full" id="detect-loc-btn" onclick="detectLocation()" style="margin-bottom:14px;gap:8px;font-size:0.9rem">
-        <span id="detect-loc-icon">📍</span>
-        <span id="detect-loc-label">Use My Current Location</span>
-        <span class="btn-spinner"></span>
-      </button>
-
-      <!-- Search bar with autocomplete -->
-      <div style="position:relative;margin-bottom:4px">
-        <div style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none;font-size:0.9rem">🔍</div>
-        <input type="text" class="form-input" id="location-search-input"
-               placeholder="Search city or area..."
-               aria-label="Search location" autocomplete="off"
-               style="padding-left:38px"
-               oninput="handleLocationSearch(this.value)"
-               onkeydown="if(event.key==='Escape')clearLocationSearch()"/>
-        <button id="loc-search-clear" onclick="clearLocationSearch()"
-                style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:0.85rem;background:none;border:none;cursor:pointer">✕</button>
-      </div>
-
-      <!-- Autocomplete results dropdown -->
-      <div id="location-suggestions" style="display:none;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px;max-height:220px;overflow-y:auto"></div>
-
-      <!-- Detected location display -->
-      <div id="detected-location-card" style="display:none;background:rgba(255,69,0,0.08);border:1.5px solid var(--brand);border-radius:var(--radius);padding:12px 14px;margin-bottom:14px;display:none;align-items:center;gap:10px">
-        <span style="font-size:1.4rem">📍</span>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:0.72rem;color:var(--brand);font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Detected Location</div>
-          <div style="font-weight:700;color:var(--text);font-size:0.9rem" id="detected-loc-name">—</div>
-          <div style="font-size:0.72rem;color:var(--text-3)" id="detected-loc-detail">—</div>
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="confirmDetectedLocation()">Use This</button>
-      </div>
-
-      <div id="popular-cities"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Address Modal -->
-<div id="address-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('address-modal')">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 class="modal-title" data-i18n="saved_addresses">Saved Addresses</h2>
-      <button class="modal-close" onclick="closeModal('address-modal')" aria-label="Close">&#10005;</button>
-    </div>
-    <div class="modal-body">
-      <div id="saved-addresses"></div>
-      <details style="margin-top:16px">
-        <summary class="btn btn-outline btn-full" style="cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:center;gap:6px;padding:12px">+ Add New Address</summary>
-        <div style="padding-top:12px">
-          <div class="form-group">
-            <label class="form-label">Label</label>
-            <select class="form-input" id="addr-label">
-              <option value="Home">Home</option>
-              <option value="Work">Work</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Street Address</label>
-            <input class="form-input" id="addr-street" placeholder="123 Food Street, Area" type="text"/>
-          </div>
-          <div class="form-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div>
-              <label class="form-label">City</label>
-              <input class="form-input" id="addr-city" placeholder="Mumbai" type="text"/>
-            </div>
-            <div>
-              <label class="form-label">State</label>
-              <input class="form-input" id="addr-state" placeholder="Maharashtra" type="text"/>
+        <div class="px-4 lg:px-8 space-y-6">
+          <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#1A1412] to-[#2A1612] p-8 flex items-center justify-center border border-white/5">
+            <div class="text-center space-y-2 z-10">
+              <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand to-[#FFA726] tracking-widest uppercase">FOODGASM</h1>
+              <p class="text-white tracking-widest text-xs font-semibold">— PREMIUM FOOD DELIVERY —</p>
+              <div class="flex items-center justify-center gap-8 mt-6">
+                 <div class="flex items-center gap-2 text-xs text-zinc-300"><i data-lucide="lock" class="w-4 h-4 text-brand"></i> SECURE AUTHENTICATION</div>
+                 <div class="flex items-center gap-2 text-xs text-zinc-300"><i data-lucide="shopping-cart" class="w-4 h-4 text-brand"></i> SMART CART MANAGEMENT</div>
+              </div>
             </div>
           </div>
-          <div class="form-group">
-            <label class="form-label">PIN Code</label>
-            <input class="form-input" id="addr-postal" placeholder="400001" type="text" inputmode="numeric"/>
+
+          <div id="dishes-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+             <!-- Dishes JS -->
           </div>
-          <button class="btn btn-primary btn-full" id="save-address-btn" onclick="saveAddress()">Save Address</button>
-        </div>
-      </details>
-    </div>
-  </div>
-</div>
-
-<!-- Payment Modal -->
-<div id="payment-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('payment-modal')">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 class="modal-title" data-i18n="payment_methods">Payment Methods</h2>
-      <button class="modal-close" onclick="closeModal('payment-modal')" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="address-card active">
-        <div class="address-icon">&#128179;</div>
-        <div><div class="address-type">Visa ****4242</div><div class="address-text">Expires 12/26</div></div>
-      </div>
-      <div class="address-card">
-        <div class="address-icon">&#128179;</div>
-        <div><div class="address-type">Mastercard ****8888</div><div class="address-text">Expires 08/27</div></div>
-      </div>
-      <button class="btn btn-outline btn-full" onclick="showToast('Add card coming soon!','info','i');closeModal('payment-modal')" style="margin-top:12px">
-        + <span data-i18n="add_card">Add New Card</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Order Success Modal -->
-<div id="order-success-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="order-success-title">
-  <div class="modal">
-    <div class="modal-body" style="text-align:center;padding:48px 32px">
-      <div style="font-size:3rem;margin-bottom:16px;animation:bounce 1s ease-in-out 3;font-weight:800;color:var(--brand)">&#10003;</div>
-      <h2 id="order-success-title" style="font-size:1.5rem;font-weight:800;margin-bottom:8px" data-i18n="order_placed">Order Placed!</h2>
-      <p style="color:var(--text-2);margin-bottom:24px" data-i18n="order_placed_sub">Your order is confirmed and being prepared.</p>
-      <div style="background:var(--surface-2);border-radius:var(--radius-lg);padding:16px;margin-bottom:24px">
-        <div style="font-size:0.78rem;color:var(--text-3);margin-bottom:4px" data-i18n="estimated_delivery">Estimated Delivery</div>
-        <div style="font-size:1.4rem;font-weight:800;color:var(--brand)" id="eta-display">25-35 min</div>
-      </div>
-      <button class="btn btn-primary btn-full" onclick="closeModal('order-success-modal');navigateTo('orders')" data-i18n="track_order">Track Order</button>
-      <button class="btn btn-secondary btn-full" onclick="closeModal('order-success-modal');navigateTo('home')" style="margin-top:8px" data-i18n="back_home">Back to Home</button>
-    </div>
-  </div>
-</div>
-
-<!-- Review Modal -->
-<div id="review-modal" class="modal-overlay hidden" role="dialog" aria-modal="true">
-  <div class="modal">
-    <div class="modal-header">
-      <h2 class="modal-title">Leave a Review</h2>
-      <button class="modal-close" onclick="closeModal('review-modal')" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body" id="review-modal-body"></div>
-  </div>
-</div>
-
-<!-- Live Tracking Modal -->
-<div id="order-detail-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('order-detail-modal')">
-  <div class="modal" style="max-width:480px;max-height:88vh;overflow-y:auto">
-    <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center">
-      <div class="modal-title" id="order-detail-title">Order Details</div>
-      <button class="modal-close" onclick="closeModal('order-detail-modal')" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body" id="order-detail-body" style="padding:16px">
-      <div style="text-align:center;padding:24px;color:var(--text-3)">Loading…</div>
-    </div>
-  </div>
-</div>
-
-<div id="tracking-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('tracking-modal')">
-  <div class="modal" style="max-width:520px">
-    <div class="modal-header" style="background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border-radius:var(--radius-lg) var(--radius-lg) 0 0">
-      <div>
-        <h2 class="modal-title" style="color:#fff">🛵 Live Order Tracking</h2>
-        <div style="font-size:0.75rem;opacity:0.85;margin-top:2px" id="track-order-id">Order #—</div>
-      </div>
-      <button class="modal-close" onclick="closeModal('tracking-modal')" aria-label="Close" style="color:#fff;opacity:0.8">✕</button>
-    </div>
-    <div class="modal-body" id="tracking-modal-body">
-      <div style="text-align:center;padding:32px;color:var(--text-3)">Loading...</div>
-    </div>
-  </div>
-</div>
-
-<!-- Terms & Privacy Modal -->
-<div id="terms-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('terms-modal')">
-  <div class="modal" style="max-width:600px;max-height:80vh;display:flex;flex-direction:column">
-    <div class="modal-header">
-      <h2 class="modal-title">📜 Terms & Privacy Policy</h2>
-      <button class="modal-close" onclick="closeModal('terms-modal')" aria-label="Close">✕</button>
-    </div>
-    <div class="modal-body" style="overflow-y:auto;flex:1">
-      <div style="font-size:0.875rem;line-height:1.7;color:var(--text-2)">
-        <h3 style="color:var(--text);margin-bottom:8px">Terms & Conditions</h3>
-        <p>By using Foodgasm, you agree to our terms of service. Orders placed are binding and subject to restaurant availability. Foodgasm is not responsible for third-party restaurant quality or delays beyond our control. Pricing may vary and is inclusive of applicable GST.</p>
-        <h3 style="color:var(--text);margin:16px 0 8px">Privacy Policy</h3>
-        <p>We collect personal information (name, email, phone, delivery address) solely to process your orders and improve our services. Your data is encrypted and never sold to third parties. Location data is used only for delivery purposes and is not stored beyond your session unless you opt-in. You may request data deletion at any time by contacting support.</p>
-        <h3 style="color:var(--text);margin:16px 0 8px">Cancellation & Refund</h3>
-        <p>Orders may be cancelled within 2 minutes of placement. After food preparation begins, cancellations are at the restaurant's discretion. Refunds for eligible cancellations are processed within 5–7 business days to your original payment method.</p>
-        <h3 style="color:var(--text);margin:16px 0 8px">Contact</h3>
-        <p>Email: support@foodgasm.in | Phone: 1800-123-4567 | Hours: 8 AM – 11 PM IST</p>
-      </div>
-    </div>
-    <div class="modal-footer" style="padding:16px;border-top:1px solid var(--border);display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="downloadTerms()">⬇️ Download PDF</button>
-      <button class="btn btn-secondary" onclick="closeModal('terms-modal')">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Help & Chatbot Modal -->
-
-<!-- Auth Required Modal -->
-<div id="auth-required-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('auth-required-modal')">
-  <div class="modal" style="max-width:400px;text-align:center;padding:36px 32px">
-    <div style="font-size:3rem;margin-bottom:12px">🔐</div>
-    <h3 style="font-family:var(--font-display);font-size:1.4rem;font-weight:800;margin-bottom:8px">Login Required</h3>
-    <p style="color:var(--text-2);font-size:0.9rem;line-height:1.6;margin-bottom:24px" id="auth-required-msg">Please login or create an account to continue.</p>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <button class="btn btn-primary btn-lg" onclick="closeModal('auth-required-modal');navigateTo('auth');setTimeout(()=>switchAuthTab('login'),200)" style="font-size:1rem;padding:14px">
-        🔑 Login to Continue
-      </button>
-      <button class="btn btn-secondary" onclick="closeModal('auth-required-modal');navigateTo('auth');setTimeout(()=>switchAuthTab('signup'),200)" style="padding:12px">
-        ✨ Create Free Account
-      </button>
-      <button onclick="closeModal('auth-required-modal')" style="background:none;border:none;color:var(--text-3);font-size:0.85rem;cursor:pointer;padding:8px;font-family:var(--font-body)">
-        Maybe later
-      </button>
-    </div>
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-      <p style="font-size:0.78rem;color:var(--text-3);margin-bottom:10px">Or sign in with</p>
-      <button onclick="closeModal('auth-required-modal');handleSocialAuth('Google')" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(66,133,244,0.35);background:rgba(66,133,244,0.06);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-family:var(--font-body);font-weight:600;font-size:0.875rem;color:var(--text)">
-        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Continue with Google
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ============ ABOUT FOODGASM MODAL ============ -->
-<div id="about-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('about-modal')">
-  <div class="modal" style="max-width:420px;padding:0;overflow:hidden">
-    <div style="background:linear-gradient(135deg,var(--brand),var(--brand-2));padding:32px 24px;text-align:center;color:#fff">
-      <div style="font-size:3rem;margin-bottom:8px">🍔</div>
-      <div style="font-family:var(--font-display);font-size:1.6rem;font-weight:800;letter-spacing:-0.5px">Foodgasm</div>
-      <div style="opacity:0.85;font-size:0.85rem;margin-top:4px">Premium Food Delivery App</div>
-    </div>
-    <div style="padding:24px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-        <div style="background:var(--surface-2);border-radius:12px;padding:14px;text-align:center">
-          <div style="font-size:1.3rem;font-weight:800;color:var(--brand)">v1.6.0</div>
-          <div style="font-size:0.75rem;color:var(--text-3);margin-top:2px">App Version</div>
-        </div>
-        <div style="background:var(--surface-2);border-radius:12px;padding:14px;text-align:center">
-          <div style="font-size:1.3rem;font-weight:800;color:var(--brand)">2025</div>
-          <div style="font-size:0.75rem;color:var(--text-3);margin-top:2px">Built In</div>
         </div>
       </div>
-      <div style="background:var(--surface-2);border-radius:12px;padding:16px;margin-bottom:16px">
-        <div style="font-weight:700;margin-bottom:10px;font-size:0.9rem">🛠️ How It's Made</div>
-        <div style="font-size:0.82rem;color:var(--text-2);line-height:1.7">Built as a <strong>single HTML file</strong> using Vanilla JS, CSS variables, and the <strong>Supabase</strong> backend for real-time data. Payments powered by <strong>Razorpay</strong>. No frameworks — pure web tech for lightning-fast performance.</div>
-      </div>
-      <div style="background:var(--surface-2);border-radius:12px;padding:16px;margin-bottom:16px">
-        <div style="font-weight:700;margin-bottom:10px;font-size:0.9rem">🎯 Purpose</div>
-        <div style="font-size:0.82rem;color:var(--text-2);line-height:1.7">Foodgasm is a full-featured food delivery platform designed to connect hungry customers with great restaurants — fast, seamlessly, and with zero friction.</div>
-      </div>
-      <div style="background:linear-gradient(135deg,rgba(255,69,0,0.08),rgba(255,107,53,0.08));border:1px solid rgba(255,69,0,0.2);border-radius:12px;padding:16px;margin-bottom:16px">
-        <div style="font-weight:700;margin-bottom:10px;font-size:0.9rem">👨‍💻 Author</div>
-        <div style="font-size:0.9rem;font-weight:700;color:var(--text);margin-bottom:6px">Bitan Chakraborty</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          <a href="mailto:chakrabortybitan679@gmail.com" style="font-size:0.8rem;color:var(--brand);text-decoration:none;display:flex;align-items:center;gap:6px">📧 chakrabortybitan679@gmail.com</a>
-          <a href="tel:+918910542451" style="font-size:0.8rem;color:var(--brand);text-decoration:none;display:flex;align-items:center;gap:6px">📞 +91 8910542451</a>
+
+      <!-- Right Sidebar (Cart + Wishlist) -->
+      <div class="w-80 flex-shrink-0 bg-panelDark flex flex-col border-l border-white/5 overflow-y-auto">
+        <div class="p-6 flex flex-col flex-shrink-0">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-white font-bold text-lg">Smart Cart</h3>
+            <i data-lucide="x" class="w-4 h-4 text-zinc-500 cursor-pointer"></i>
+          </div>
+          
+          <div id="cart-items" class="space-y-4 mb-6">
+            <!-- Cart Items -->
+          </div>
+
+          <div class="border-t border-white/5 pt-4 space-y-2 text-sm">
+            <div class="flex justify-between text-zinc-400 text-xs"><span>Subtotal</span><span class="text-white" id="cart-subtotal">$0.00</span></div>
+            <div class="flex justify-between text-zinc-400 text-xs"><span>Delivery Fee</span><span class="text-white" id="cart-delivery">$3.00</span></div>
+            <button onclick="app.switchTab('orders')" class="w-full mt-4 py-3 rounded-xl bg-brand text-white font-bold text-sm hover:bg-brandDark transition-colors">
+              PROCEED TO ORDER
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 border-t border-white/5 flex-1">
+          <h3 class="text-white font-bold text-xs uppercase tracking-wider mb-4 text-zinc-400">Personalized Wishlist</h3>
+          <div id="wishlist-grid" class="grid grid-cols-2 gap-2">
+            <!-- Wishlist Items -->
+          </div>
         </div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="closeModal('about-modal')">Close</button>
     </div>
-  </div>
-</div>
 
-<!-- ============ FOODIE AI CHATBOT MODAL ============ -->
-<div id="chatbot-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" onclick="if(event.target===this)closeModal('chatbot-modal')">
-  <div class="modal" style="max-width:420px;max-height:85vh;display:flex;flex-direction:column">
-    <div class="modal-header" style="background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border-radius:var(--radius-lg) var(--radius-lg) 0 0">
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🤖</div>
-        <div>
-          <div style="font-weight:800;color:#fff">Foodie AI</div>
-          <div style="font-size:0.72rem;opacity:0.85">Your food assistant • Always online</div>
+    <!-- ================= ORDERS TAB ================= -->
+    <div id="tab-orders" class="hidden flex-1 w-full bg-white text-zinc-800 flex overflow-hidden">
+      <div class="flex-1 flex flex-col overflow-y-auto px-8 py-6 pb-20">
+        
+        <header class="flex items-center justify-between mb-8">
+          <div class="relative w-96">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400"></i>
+            <input type="text" placeholder="Search" class="w-full pl-10 pr-4 py-2.5 rounded-full bg-zinc-100 text-zinc-700 border-none focus:outline-none text-sm" />
+          </div>
+          <div class="flex items-center space-x-4">
+             <i data-lucide="calendar" class="w-5 h-5 text-zinc-400"></i>
+             <i data-lucide="bell" class="w-5 h-5 text-zinc-400"></i>
+             <div class="w-8 h-8 rounded-full overflow-hidden cursor-pointer">
+               <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="User" />
+             </div>
+          </div>
+        </header>
+
+        <div class="bg-white rounded-2xl p-6 border border-zinc-200 shadow-sm mb-6">
+          <h2 class="text-lg font-bold text-zinc-800">Active Order</h2>
+          <p class="text-xs text-zinc-500 mb-8">Your order is on progress on your order.</p>
+          
+          <!-- Progress -->
+          <div class="flex items-center justify-between mb-8 relative">
+            <div class="absolute top-1/2 left-0 right-0 h-1 bg-zinc-200 -translate-y-1/2 z-0"></div>
+            <div class="absolute top-1/2 left-0 w-1/3 h-1 bg-panelLight -translate-y-1/2 z-0"></div>
+            
+            <div class="relative z-10 flex flex-col items-center">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-panelLight text-white">1</div>
+                <span class="text-[10px] font-bold absolute -bottom-5 whitespace-nowrap text-panelLight">Active Order</span>
+            </div>
+            <div class="relative z-10 flex flex-col items-center">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-panelLight text-white">2</div>
+                <span class="text-[10px] font-bold absolute -bottom-5 whitespace-nowrap text-panelLight">Progressed</span>
+            </div>
+            <div class="relative z-10 flex flex-col items-center">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-white border border-zinc-300 text-zinc-400">3</div>
+                <span class="text-[10px] font-bold absolute -bottom-5 whitespace-nowrap text-zinc-500">Dispatching</span>
+            </div>
+            <div class="relative z-10 flex flex-col items-center">
+                <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-white border border-zinc-300 text-zinc-400">4</div>
+                <span class="text-[10px] font-bold absolute -bottom-5 whitespace-nowrap text-zinc-500">Delivered</span>
+            </div>
+          </div>
+
+          <!-- Map -->
+          <div class="relative h-48 bg-zinc-100 rounded-xl overflow-hidden mt-10 mb-4 border border-zinc-200 flex items-center justify-center">
+             <div class="absolute inset-0 opacity-40 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.8)_25%,rgba(255,255,255,0.8)_50%,transparent_50%,transparent_75%,rgba(255,255,255,0.8)_75%,rgba(255,255,255,0.8)_100%)] [background-size:20px_20px]"></div>
+             <span class="bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded absolute top-3 left-3">Live Map</span>
+             <!-- Fake route line -->
+             <div class="absolute top-1/2 left-1/4 right-1/2 h-1 bg-panelLight -rotate-12 z-0"></div>
+             <div class="w-8 h-8 rounded-full bg-panelLight text-white flex items-center justify-center shadow-lg relative z-10 -ml-10">
+               <i data-lucide="bus" class="w-4 h-4"></i>
+             </div>
+             <div class="w-3 h-3 rounded-full bg-brand absolute left-1/4 top-[40%] z-10"></div>
+          </div>
+
+          <div class="flex justify-between items-end border-t border-zinc-100 pt-4">
+            <div>
+              <h4 class="font-bold text-sm text-zinc-800">Estimated arrival time</h4>
+              <p class="text-xs text-zinc-500">Your estimated arrival will be on time.</p>
+            </div>
+            <div class="flex items-center font-bold text-zinc-800">
+              <i data-lucide="clock" class="w-4 h-4 mr-1.5 text-zinc-400"></i> 2:30 PM
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 border border-zinc-200 shadow-sm">
+           <h3 class="text-xs font-bold text-zinc-800 uppercase tracking-wider mb-4">Order History</h3>
+           <table class="w-full text-left text-sm" id="order-history-table">
+             <thead>
+               <tr class="text-zinc-500 text-xs border-b border-zinc-100">
+                 <th class="pb-3 font-medium">Date</th>
+                 <th class="pb-3 font-medium">Price</th>
+                 <th class="pb-3 font-medium">Cost</th>
+                 <th class="pb-3 font-medium"></th>
+               </tr>
+             </thead>
+             <tbody class="divide-y divide-zinc-50">
+               <tr>
+                 <td class="py-4"><p class="font-bold text-zinc-800">Jan 28, 2023</p><p class="text-[10px] text-zinc-400">20m Dec 19, 2023</p></td>
+                 <td class="py-4 font-bold text-zinc-800">$125.00</td>
+                 <td class="py-4 font-bold text-zinc-800">$3.00</td>
+                 <td class="py-4 text-right"><button class="px-3 py-1.5 rounded bg-brand text-white text-xs font-bold shadow-sm">Reorder</button></td>
+               </tr>
+               <tr>
+                 <td class="py-4"><p class="font-bold text-zinc-800">Jan 28, 2023</p><p class="text-[10px] text-zinc-400">20m Dec 19, 2023</p></td>
+                 <td class="py-4 font-bold text-zinc-800">$175.00</td>
+                 <td class="py-4 font-bold text-zinc-800">$3.00</td>
+                 <td class="py-4 text-right"><button class="px-3 py-1.5 rounded border border-zinc-200 text-zinc-600 text-xs font-bold">Reorder</button></td>
+               </tr>
+               <tr>
+                 <td class="py-4"><p class="font-bold text-zinc-800">Jan 28, 2023</p><p class="text-[10px] text-zinc-400">20m Dec 19, 2023</p></td>
+                 <td class="py-4 font-bold text-zinc-800">$125.00</td>
+                 <td class="py-4 font-bold text-zinc-800">$3.00</td>
+                 <td class="py-4 text-right"><button class="px-3 py-1.5 rounded border border-zinc-200 text-zinc-600 text-xs font-bold">Reorder</button></td>
+               </tr>
+             </tbody>
+           </table>
         </div>
       </div>
-      <button class="modal-close" onclick="closeModal('chatbot-modal')" style="color:#fff;opacity:0.8" aria-label="Close">✕</button>
-    </div>
-    <div id="chatbot-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;min-height:260px;max-height:340px"></div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border)">
-      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
-        <button class="chip" style="font-size:0.7rem;padding:4px 10px" onclick="chatbotSend('Recommend food for me')">🍽️ Recommendations</button>
-        <button class="chip" style="font-size:0.7rem;padding:4px 10px" onclick="chatbotSend('Show nearby restaurants')">📍 Nearby</button>
-        <button class="chip" style="font-size:0.7rem;padding:4px 10px" onclick="chatbotSend('How do I track my order?')">📦 Track order</button>
-        <button class="chip" style="font-size:0.7rem;padding:4px 10px" onclick="chatbotSend('Show veg options')">🟢 Veg only</button>
-      </div>
-      <div style="display:flex;gap:8px">
-        <input type="text" id="chatbot-input" placeholder="Ask Foodie anything..." 
-               style="flex:1;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-full);font-size:0.875rem;color:var(--text)"
-               onkeydown="if(event.key==='Enter')chatbotSendInput()"/>
-        <button onclick="chatbotSendInput()" style="width:40px;height:40px;background:var(--brand);border:none;border-radius:50%;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">➤</button>
+      
+      <!-- Right Profile sidebar -->
+      <div class="w-80 flex-shrink-0 p-8 hidden xl:block border-l border-zinc-100">
+         <div class="bg-white rounded-xl p-6 flex flex-col items-center shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-zinc-100">
+            <div class="w-16 h-16 rounded-full overflow-hidden mb-3 ring-4 ring-zinc-50">
+              <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=200&q=80" alt="User Profile" class="w-full h-full object-cover" />
+            </div>
+            <h3 class="font-bold text-zinc-800 text-sm">User Morm</h3>
+            <p class="text-xs text-zinc-400">user@motogmah.com</p>
+         </div>
       </div>
     </div>
   </div>
-</div>
-</div>
 
-<!-- Push bell (appears after permission granted) -->
-<button id="push-bell" class="push-bell" onclick="showPushPanel()" aria-label="Notifications" title="Notifications">
-  🔔<div class="push-bell-dot" id="push-bell-dot" style="display:none"></div>
-</button>
-
-<script src="js/i18n.js"></script>
-<script src="js/geo.js"></script>
-<script src="js/data.js"></script>
-<script src="js/app.js" defer></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
