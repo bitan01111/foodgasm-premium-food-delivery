@@ -14,7 +14,7 @@ if (!restCount || restCount.count === 0) {
 }
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5500;
 
 // Middleware
 app.use(cors());

@@ -4,6 +4,8 @@ const app = {
   cart: [],
   wishlist: [],
   
+  user: null,
+  
   tabs: [
     { id: 'home', label: 'Home', icon: 'home' },
     { id: 'browse', label: 'Browse', icon: 'layout-grid' },
@@ -15,11 +17,71 @@ const app = {
 
   async init() {
     this.renderNav();
+    await this.initAuth();
     await this.fetchDishes();
     this.updateCart();
     this.renderWishlistGrid();
     this.switchTab('home');
     setInterval(() => { if (window.lucide) window.lucide.createIcons(); }, 500);
+  },
+  
+  async initAuth() {
+    if (window.supabase && window.CONFIG?.SUPABASE_URL && window.CONFIG?.SUPABASE_ANON_KEY) {
+       this.supabase = window.supabase.createClient(window.CONFIG.SUPABASE_URL, window.CONFIG.SUPABASE_ANON_KEY);
+       const { data: { session } } = await this.supabase.auth.getSession();
+       if (session?.user) {
+         this.user = session.user;
+       }
+       
+       this.supabase.auth.onAuthStateChange((_event, session) => {
+         this.user = session?.user || null;
+         this.renderAuth();
+       });
+       
+       this.renderAuth();
+    }
+  },
+  
+  renderAuth() {
+    const container = document.getElementById('auth-container');
+    if (!container) return;
+    
+    if (this.user) {
+      const email = this.user.email;
+      const name = this.user.user_metadata?.full_name || email.split('@')[0];
+      const avatar = this.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=200&q=80';
+      
+      container.innerHTML = `
+        <div class="w-16 h-16 rounded-full overflow-hidden mb-3 ring-4 ring-zinc-50 shadow-sm">
+          <img src="${avatar}" alt="User Profile" class="w-full h-full object-cover" />
+        </div>
+        <h3 class="font-bold text-zinc-800 text-sm truncate w-full text-center">${name}</h3>
+        <p class="text-xs text-zinc-400 truncate w-full text-center">${email}</p>
+        <button onclick="app.logout()" class="mt-4 px-4 py-2 bg-zinc-100 text-zinc-600 text-xs font-bold rounded-lg hover:bg-zinc-200 w-full transition-colors border border-zinc-200">Sign Out</button>
+      `;
+    } else {
+      container.innerHTML = `
+        <div class="w-16 h-16 rounded-full overflow-hidden mb-3 ring-4 ring-zinc-50 bg-zinc-100 flex items-center justify-center">
+          <i data-lucide="user" class="w-8 h-8 text-zinc-400"></i>
+        </div>
+        <h3 class="font-bold text-zinc-800 text-sm">Guest Mode</h3>
+        <button onclick="app.login()" class="mt-4 px-4 py-2 bg-brand text-white text-xs font-bold rounded-lg hover:bg-brandDark w-full transition-colors shadow-sm">Sign In with Google</button>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+    }
+  },
+  
+  async login() {
+    if (!this.supabase) return alert("Supabase config not found.");
+    await this.supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + window.location.pathname }
+    });
+  },
+  
+  async logout() {
+    if (!this.supabase) return;
+    await this.supabase.auth.signOut();
   },
 
   renderNav() {

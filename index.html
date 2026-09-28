@@ -7,6 +7,8 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/config.js"></script>
   
   <script>
     tailwind.config = {
@@ -203,12 +205,12 @@
       
       <!-- Right Profile sidebar -->
       <div class="w-80 flex-shrink-0 p-8 hidden xl:block border-l border-zinc-100">
-         <div class="bg-white rounded-xl p-6 flex flex-col items-center shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-zinc-100">
-            <div class="w-16 h-16 rounded-full overflow-hidden mb-3 ring-4 ring-zinc-50">
-              <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=200&q=80" alt="User Profile" class="w-full h-full object-cover" />
+         <div id="auth-container" class="bg-white rounded-xl p-6 flex flex-col items-center shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-zinc-100">
+            <div class="w-16 h-16 rounded-full overflow-hidden mb-3 ring-4 ring-zinc-50 bg-zinc-100 flex items-center justify-center">
+              <i data-lucide="user" class="w-8 h-8 text-zinc-400"></i>
             </div>
-            <h3 class="font-bold text-zinc-800 text-sm">User Morm</h3>
-            <p class="text-xs text-zinc-400">user@motogmah.com</p>
+            <h3 class="font-bold text-zinc-800 text-sm">Guest Mode</h3>
+            <button onclick="app.login()" class="mt-4 px-4 py-2 bg-brand text-white text-xs font-bold rounded-lg hover:bg-brandDark w-full transition-colors">Sign In with Google</button>
          </div>
       </div>
     </div>
