@@ -100,7 +100,7 @@
           <div class="border-t border-white/5 pt-4 space-y-2 text-sm">
             <div class="flex justify-between text-zinc-400 text-xs"><span>Subtotal</span><span class="text-white" id="cart-subtotal">$0.00</span></div>
             <div class="flex justify-between text-zinc-400 text-xs"><span>Delivery Fee</span><span class="text-white" id="cart-delivery">$3.00</span></div>
-            <button onclick="app.switchTab('orders')" class="w-full mt-4 py-3 rounded-xl bg-brand text-white font-bold text-sm hover:bg-brandDark transition-colors">
+            <button onclick="app.checkout()" class="w-full mt-4 py-3 rounded-xl bg-brand text-white font-bold text-sm hover:bg-brandDark transition-colors">
               PROCEED TO ORDER
             </button>
           </div>
@@ -194,25 +194,8 @@
                  <th class="pb-3 font-medium"></th>
                </tr>
              </thead>
-             <tbody class="divide-y divide-zinc-50">
-               <tr>
-                 <td class="py-4"><p class="font-bold text-zinc-800">Jan 28, 2023</p><p class="text-[10px] text-zinc-400">20m Dec 19, 2023</p></td>
-                 <td class="py-4 font-bold text-zinc-800">$125.00</td>
-                 <td class="py-4 font-bold text-zinc-800">$3.00</td>
-                 <td class="py-4 text-right"><button class="px-3 py-1.5 rounded bg-brand text-white text-xs font-bold shadow-sm">Reorder</button></td>
-               </tr>
-               <tr>
-                 <td class="py-4"><p class="font-bold text-zinc-800">Jan 28, 2023</p><p class="text-[10px] text-zinc-400">20m Dec 19, 2023</p></td>
-                 <td class="py-4 font-bold text-zinc-800">$175.00</td>
-                 <td class="py-4 font-bold text-zinc-800">$3.00</td>
-                 <td class="py-4 text-right"><button class="px-3 py-1.5 rounded border border-zinc-200 text-zinc-600 text-xs font-bold">Reorder</button></td>
-               </tr>
-               <tr>
-                 <td class="py-4"><p class="font-bold text-zinc-800">Jan 28, 2023</p><p class="text-[10px] text-zinc-400">20m Dec 19, 2023</p></td>
-                 <td class="py-4 font-bold text-zinc-800">$125.00</td>
-                 <td class="py-4 font-bold text-zinc-800">$3.00</td>
-                 <td class="py-4 text-right"><button class="px-3 py-1.5 rounded border border-zinc-200 text-zinc-600 text-xs font-bold">Reorder</button></td>
-               </tr>
+             <tbody class="divide-y divide-zinc-50" id="order-history-body">
+               <!-- Rendered by JS -->
              </tbody>
            </table>
         </div>

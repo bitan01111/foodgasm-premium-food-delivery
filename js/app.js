@@ -208,6 +208,7 @@ const app = {
       document.getElementById('tab-home').classList.remove('hidden');
     } else if (tabId === 'orders') {
       document.getElementById('tab-orders').classList.remove('hidden');
+      this.renderOrders();
     } else if (tabId === 'wishlist') {
       // Re-use home layout but filter dishes
       document.getElementById('tab-home').classList.remove('hidden');
@@ -219,16 +220,63 @@ const app = {
          generic.classList.remove('hidden');
          generic.innerHTML = `
            <div class="flex-1 flex items-center justify-center bg-bgDark text-white w-full">
-             <div class="text-center">
+             <div class="text-center opacity-50">
                <i data-lucide="${this.tabs.find(t=>t.id===tabId).icon}" class="w-16 h-16 mx-auto mb-4 text-brand"></i>
-               <h2 class="text-2xl font-bold mb-2 capitalize">${tabId} Page</h2>
-               <p class="text-zinc-400 text-sm">This section is currently under construction for the demo.</p>
+               <h2 class="text-2xl font-bold mb-2 capitalize">${tabId}</h2>
+               <p class="text-zinc-400 text-sm">Nothing to see here right now.</p>
              </div>
            </div>
          `;
          if (window.lucide) window.lucide.createIcons();
       }
     }
+  },
+  
+  checkout() {
+    if (this.cart.length === 0) {
+      alert("Cart is empty!");
+      return;
+    }
+    
+    const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const orderTotal = subtotal + 3.00;
+    
+    // Add to history
+    this.orderHistory = this.orderHistory || [];
+    this.orderHistory.unshift({
+       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+       time: 'Just now',
+       price: orderTotal,
+       fee: 3.00
+    });
+    
+    // Clear cart
+    this.cart = [];
+    this.updateCart();
+    
+    // Switch to orders
+    this.switchTab('orders');
+  },
+  
+  renderOrders() {
+    const tbody = document.getElementById('order-history-body');
+    if (!tbody) return;
+    
+    const orders = this.orderHistory || [];
+    
+    if (orders.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="4" class="py-10 text-center text-zinc-400">No previous orders found.</td></tr>`;
+      return;
+    }
+    
+    tbody.innerHTML = orders.map(o => `
+       <tr>
+         <td class="py-4"><p class="font-bold text-zinc-800">${o.date}</p><p class="text-[10px] text-zinc-400">${o.time}</p></td>
+         <td class="py-4 font-bold text-zinc-800">$${o.price.toFixed(2)}</td>
+         <td class="py-4 font-bold text-zinc-800">$${o.fee.toFixed(2)}</td>
+         <td class="py-4 text-right"><button class="px-3 py-1.5 rounded bg-brand text-white text-xs font-bold shadow-sm">Reorder</button></td>
+       </tr>
+    `).join('');
   },
   
   renderWishlistOnly() {
