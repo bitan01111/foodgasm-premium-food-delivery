@@ -394,6 +394,10 @@ const app = {
     this.cart = [];
     this.updateCart();
     
+    // Show live driver
+    const driver = document.getElementById('driver-profile-card');
+    if(driver) driver.classList.remove('hidden');
+    
     // Confetti!
     if(window.confetti) {
        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
@@ -457,8 +461,21 @@ const app = {
       navigator.geolocation.getCurrentPosition(async (pos) => {
         const lat = pos.coords.latitude;
         const lon = pos.coords.longitude;
+        this.fetchRestaurantsByCoords(lat, lon, grid);
+      }, () => {
+         // Fallback to Kolkata if denied!
+         console.warn("Location denied. Defaulting to Kolkata, India.");
+         this.fetchRestaurantsByCoords(22.5726, 88.3639, grid);
+      });
+    } else {
+       // Fallback to Kolkata if unsupported
+       this.fetchRestaurantsByCoords(22.5726, 88.3639, grid);
+    }
+  },
+  
+  async fetchRestaurantsByCoords(lat, lon, grid) {
         try {
-          // Use Overpass API to find REAL restaurants around the user's actual GPS location!
+          // Use Overpass API to find REAL restaurants around the GPS location!
           const query = `[out:json];node(around:3000,${lat},${lon})["amenity"~"restaurant|cafe"];out 12;`;
           const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
           const data = await res.json();
@@ -485,12 +502,6 @@ const app = {
           console.error(e);
           grid.innerHTML = `<div class="col-span-full py-10 text-center text-red-400">Failed to fetch live location data.</div>`;
         }
-      }, () => {
-         grid.innerHTML = `<div class="col-span-full py-10 text-center text-zinc-400">Location access denied. Cannot find restaurants near you.</div>`;
-      });
-    } else {
-       grid.innerHTML = `<div class="col-span-full py-10 text-center text-zinc-400">Geolocation not supported by this browser.</div>`;
-    }
   },
   
   async fetchTopPriority() {
