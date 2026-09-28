@@ -70,10 +70,10 @@ We built a sticky **Recruiter Demo Bar** directly at the top of the interface. Y
 
 | Role | Demo Persona | Email | Password | Primary Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
-| **Customer** | Rohan Sharma | `customer@foodgasm.com` | `foodgasm123` | Cart, macro tracker, COD / Razorpay checkout, live order tracking |
-| **Restaurant** | Peter Cat Manager | `partner@foodgasm.com` | `foodgasm123` | Menu control, active order preparation, kitchen queue |
+| **Customer** | Aditya Roy | `customer@foodgasm.com` | `foodgasm123` | Cart, macro tracker, COD / Razorpay checkout, live order tracking |
+| **Restaurant** | Rajesh Sharma | `owner@foodgasm.com` | `foodgasm123` | Menu control, active order preparation, kitchen queue |
 | **Delivery Rider** | Vikram Singh | `rider@foodgasm.com` | `foodgasm123` | Active trip radar, delivery dispatch, simulated GPS route |
-| **Super Admin** | Platform Admin | `admin@foodgasm.com` | `admin123` | Revenue analytics, order volume trends, partner management |
+| **Super Admin** | Bitan Chakraborty | `admin@foodgasm.com` | `foodgasm123` | Revenue analytics, order volume trends, partner management |
 
 ---
 

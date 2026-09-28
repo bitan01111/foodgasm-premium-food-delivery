@@ -4,15 +4,67 @@
 const CONFIG = {
   API_BASE: '/api',
   SUPABASE_URL: 'https://ryetnckmeckyievbxojl.supabase.co',
-  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5ZXRuY2ttZWNreWlldmJ4b2psIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NzA2MTgsImV4cCI6MjA5NTA0NjYxOH0.8Wq58CNEQbzfZ4fdyPpdQ4Y4OjeCwaQy1-QyN5NBMNs',
+  SUPABASE_ANON_KEY: 'sb_publishable_z5TtCJkRZvYx_PmR0ffb7A_i3eC7OH9',
   APP_NAME: 'Foodgasm',
   VERSION: '2.0.0',
   DELIVERY_FEE: 35,
   TAX_RATE: 0.05,
 };
 
+// ─── Supabase REST helper (PostgREST) ──────────────────────────────────────
+const SB = {
+  headers: (extra = {}) => ({
+    'Content-Type': 'application/json',
+    'apikey': CONFIG.SUPABASE_ANON_KEY,
+    'Authorization': `Bearer ${STATE.authToken || CONFIG.SUPABASE_ANON_KEY}`,
+    'Prefer': 'return=representation',
+    ...extra
+  }),
+
+  url: (table, params = '') => `${CONFIG.SUPABASE_URL}/rest/v1/${table}${params}`,
+
+  get: async (table, params = '') => {
+    try {
+      const res = await fetch(SB.url(table, params), { headers: SB.headers() });
+      if (!res.ok) throw new Error(`SB.get ${table} ${res.status}`);
+      return await res.json();
+    } catch(e) { console.warn('[SB.get]', e.message); return null; }
+  },
+
+  post: async (table, body) => {
+    try {
+      const res = await fetch(SB.url(table), {
+        method: 'POST', headers: SB.headers(), body: JSON.stringify(body)
+      });
+      const d = await res.json().catch(()=>([]));
+      if (!res.ok) throw new Error(d[0]?.message || `SB.post ${table} ${res.status}`);
+      return Array.isArray(d) ? d[0] : d;
+    } catch(e) { console.warn('[SB.post]', e.message); return null; }
+  },
+
+  patch: async (table, filter, body) => {
+    try {
+      const res = await fetch(SB.url(table, `?${filter}`), {
+        method: 'PATCH', headers: SB.headers(), body: JSON.stringify(body)
+      });
+      const d = await res.json().catch(()=>([]));
+      return Array.isArray(d) ? d[0] : d;
+    } catch(e) { console.warn('[SB.patch]', e.message); return null; }
+  },
+
+  delete: async (table, filter) => {
+    try {
+      await fetch(SB.url(table, `?${filter}`), {
+        method: 'DELETE', headers: SB.headers()
+      });
+      return true;
+    } catch(e) { console.warn('[SB.delete]', e.message); return false; }
+  }
+};
+
 const API = {
   headers: () => {
+
     const headers = { 'Content-Type': 'application/json' };
     if (STATE.authToken) {
       headers['Authorization'] = `Bearer ${STATE.authToken}`;
@@ -65,39 +117,55 @@ const API = {
   auth: {
     signIn: async (email, password) => {
       try {
-        // Try Supabase auth first
-        const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': CONFIG.SUPABASE_ANON_KEY },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (data.access_token) {
-          return { access_token: data.access_token, refresh_token: data.refresh_token, user: data.user };
+        const data = await API.post('/auth/login', { email, password });
+        if (data && (data.token || data.access_token)) {
+          return { access_token: data.token || data.access_token, user: data.user };
         }
-        throw new Error(data.error_description || data.msg || 'Invalid email or password');
+        throw new Error(data?.error || 'Invalid email or password');
       } catch (e) {
+        if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_URL.includes('supabase.co')) {
+          try {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'apikey': CONFIG.SUPABASE_ANON_KEY },
+              body: JSON.stringify({ email, password })
+            });
+            const sbData = await res.json();
+            if (sbData.access_token) {
+              return { access_token: sbData.access_token, refresh_token: sbData.refresh_token, user: sbData.user };
+            }
+          } catch (sbErr) {}
+        }
         return { error: true, message: e.message || 'Login failed' };
       }
     },
 
     signUp: async (email, password, meta = {}) => {
       try {
-        const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/signup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': CONFIG.SUPABASE_ANON_KEY },
-          body: JSON.stringify({ email, password, data: { full_name: meta.full_name || email.split('@')[0] } })
+        const data = await API.post('/auth/register', {
+          name: meta.full_name || email.split('@')[0],
+          email,
+          password,
+          phone: meta.phone || ''
         });
-        const data = await res.json();
-        if (data.access_token) {
-          return { access_token: data.access_token, refresh_token: data.refresh_token, user: data.user };
+        if (data && (data.token || data.access_token)) {
+          return { access_token: data.token || data.access_token, user: data.user };
         }
-        if (data.id) {
-          // User created but needs email confirmation
-          return { needsConfirm: true, message: 'Check your email for a confirmation link!' };
-        }
-        throw new Error(data.error_description || data.msg || 'Signup failed');
+        throw new Error(data?.error || 'Registration failed');
       } catch (e) {
+        if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_URL.includes('supabase.co')) {
+          try {
+            const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/signup`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'apikey': CONFIG.SUPABASE_ANON_KEY },
+              body: JSON.stringify({ email, password, data: { full_name: meta.full_name || email.split('@')[0] } })
+            });
+            const sbData = await res.json();
+            if (sbData.access_token) {
+              return { access_token: sbData.access_token, refresh_token: sbData.refresh_token, user: sbData.user };
+            }
+          } catch (sbErr) {}
+        }
         return { error: true, message: e.message || 'Signup failed' };
       }
     },
@@ -120,25 +188,21 @@ const API = {
 
     getUser: async (token) => {
       try {
-        const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/user`, {
-          headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) return null;
-        return await res.json();
-      } catch (e) {
-        return null;
+        const data = await API.get('/auth/me');
+        if (data && data.user) return data.user;
+      } catch (e) {}
+      if (CONFIG.SUPABASE_URL && CONFIG.SUPABASE_URL.includes('supabase.co')) {
+        try {
+          const res = await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/user`, {
+            headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) return await res.json();
+        } catch (e) {}
       }
+      return null;
     },
 
     signOut: async () => {
-      try {
-        if (STATE.authToken) {
-          await fetch(`${CONFIG.SUPABASE_URL}/auth/v1/logout`, {
-            method: 'POST',
-            headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${STATE.authToken}` }
-          });
-        }
-      } catch(e) {}
       clearSession();
     }
   }
@@ -624,10 +688,9 @@ function saveCart() {
 
 async function syncCartToServer() {
   if (!STATE.user?.id) return;
-  // Clear existing cart items and re-insert
-  await API.delete('cart_items', `user_id=eq.${STATE.user.id}`);
+  await SB.delete('cart_items', `user_id=eq.${STATE.user.id}`);
   for (const item of STATE.cart) {
-    await API.post('cart_items', {
+    await SB.post('cart_items', {
       user_id: STATE.user.id,
       menu_item_id: item.supabase_id || null,
       item_name: item.name,
@@ -641,10 +704,9 @@ async function syncCartToServer() {
 
 async function syncCartFromServer() {
   if (!STATE.user?.id) return;
-  const rows = await API.get('cart_items', `?user_id=eq.${STATE.user.id}`);
+  const rows = await SB.get('cart_items', `?user_id=eq.${STATE.user.id}`);
   if (!rows || !rows.length) return;
   STATE.cart = rows.map(r => {
-    // Try to map back to local FOODS for full data
     const localFood = FOODS.find(f => f.name === r.item_name);
     return {
       id: localFood?.id || r.id,
@@ -883,7 +945,7 @@ function isWishlisted(id, type = 'restaurant') {
 async function syncWishlistFromServer() {
   if (!STATE.user?.id) return;
   try {
-    const rows = await API.get('wishlist', `?user_id=eq.${STATE.user.id}&select=*`);
+    const rows = await SB.get('wishlist', `?user_id=eq.${STATE.user.id}&select=*`);
     if (rows && rows.length) {
       STATE.wishlist = rows.map(r => {
         const type = r.item_type || 'restaurant';
@@ -1727,23 +1789,59 @@ async function submitOrder(paymentMethod, paymentId) {
     let totalAmt = totals.total;
 
     try {
-      const payload = {
-        restaurant_id: STATE.cart[0]?.restaurantId || 'res_peter_cat',
-        items: STATE.cart.map(i => ({ id: i.id, quantity: i.qty || 1 })),
-        address: `${street}, ${city}`,
-        payment_method: paymentMethod || 'cod',
-        coupon_code: STATE.promoCode,
+      // Try direct Supabase insert first
+      const subtotal = totals.subtotal;
+      const deliveryFee = totals.delivery;
+      const taxAmount = totals.tax;
+      const discountAmount = totals.discount || 0;
+      const totalAmount = totals.total;
+      const restaurantId = STATE.cart[0]?.restaurantId || null;
+
+      const sbOrder = await SB.post('orders', {
+        user_id: STATE.user.id,
+        restaurant_id: restaurantId,
+        address_id: STATE.selectedAddressId || null,
+        status: 'placed',
+        payment_status: paymentMethod === 'cod' ? 'pending' : 'paid',
+        payment_method: paymentMethod,
+        payment_id: paymentId || null,
+        subtotal, delivery_fee: deliveryFee, tax_amount: taxAmount,
+        discount_amount: discountAmount, total_amount: totalAmount,
         special_notes: specialNotes,
-        dest_lat: (window.GEO && window.GEO.current?.lat) || 22.5519,
-        dest_lng: (window.GEO && window.GEO.current?.lng) || 88.3526
-      };
-      const res = await API.post('/orders', payload);
-      if (res && res.orderId) {
-        orderId = res.orderId;
-        totalAmt = res.totalAmount || totals.total;
+        coupon_code: STATE.promoCode || null,
+        estimated_time: 35,
+      });
+      if (sbOrder?.id) {
+        orderId = sbOrder.id;
+        totalAmt = totalAmount;
+        // Insert order items
+        for (const item of STATE.cart) {
+          await SB.post('order_items', {
+            order_id: sbOrder.id,
+            menu_item_id: item.supabase_id || null,
+            item_name: item.name,
+            quantity: item.qty,
+            unit_price: item.price,
+            total_price: item.price * item.qty
+          });
+        }
+        // Clear server cart
+        await SB.delete('cart_items', `user_id=eq.${STATE.user.id}`);
       }
     } catch(apiErr) {
-      console.warn('[submitOrder] Express API fallback:', apiErr.message);
+      // Fallback to Express API
+      try {
+        const payload = {
+          restaurant_id: STATE.cart[0]?.restaurantId || 'res_peter_cat',
+          items: STATE.cart.map(i => ({ id: i.id, quantity: i.qty || 1 })),
+          address: `${street}, ${city}`,
+          payment_method: paymentMethod || 'cod',
+          coupon_code: STATE.promoCode,
+          special_notes: specialNotes,
+        };
+        const res = await API.post('/orders', payload);
+        if (res && res.orderId) { orderId = res.orderId; totalAmt = res.totalAmount || totals.total; }
+      } catch(e2) { console.warn('[submitOrder] Both Supabase and Express failed:', e2.message); }
     }
 
     // SUCCESS
@@ -3816,7 +3914,7 @@ async function updateProfile() {
 // --- Addresses ---
 async function loadAddresses() {
   if (!STATE.user?.id) return;
-  const rows = await API.get('addresses', `?user_id=eq.${STATE.user.id}&order=is_default.desc`);
+  const rows = await SB.get('addresses', `?user_id=eq.${STATE.user.id}&order=is_default.desc`);
   STATE.addresses = rows || [];
   renderAddresses();
 }
@@ -3855,15 +3953,15 @@ async function saveAddress() {
   const btn = document.getElementById('save-address-btn');
   if (btn) { btn.classList.add('btn-loading'); btn.disabled = true; }
   try {
-    const res = await API.post('addresses', {
+    const row = await SB.post('addresses', {
       user_id: STATE.user.id, label, street, city, state: state_,
       postal_code: postal, country: 'India', is_default: STATE.addresses.length === 0
     });
-    if (res?.length) {
-      STATE.addresses.push(res[0]);
+    if (row?.id) {
+      STATE.addresses.push(row);
       renderAddresses();
       showToast('Address saved!', 'success', '&#10003;');
-      if (!STATE.selectedAddressId) STATE.selectedAddressId = res[0].id;
+      if (!STATE.selectedAddressId) STATE.selectedAddressId = row.id;
     }
   } finally {
     if (btn) { btn.classList.remove('btn-loading'); btn.disabled = false; }
@@ -3872,7 +3970,7 @@ async function saveAddress() {
 
 async function deleteAddress(id, e) {
   e?.stopPropagation();
-  await API.delete('addresses', `id=eq.${id}&user_id=eq.${STATE.user.id}`);
+  await SB.delete('addresses', `id=eq.${id}&user_id=eq.${STATE.user.id}`);
   STATE.addresses = STATE.addresses.filter(a => a.id !== id);
   renderAddresses();
   showToast('Address removed','info','&#10005;');

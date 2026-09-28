@@ -24,3 +24,8 @@ build
 # Misc
 *.log
 
+# SQLite Database (auto-generated on npm start)
+data/*.db
+data/*.db-shm
+data/*.db-wal
+

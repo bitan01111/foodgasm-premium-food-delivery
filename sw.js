@@ -4,7 +4,7 @@
   - Network-first with offline fallback for /api/ calls
 */
 
-const CACHE_VERSION = 'foodgasm-v2.0';
+const CACHE_VERSION = 'foodgasm-v2.1';
 
 const STATIC_ASSETS = [
   '/',
