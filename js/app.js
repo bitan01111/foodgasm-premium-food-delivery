@@ -10,6 +10,8 @@ const app = {
   
   tabs: [
     { id: 'home', label: 'Home', icon: 'home' },
+    { id: 'nearme', label: 'Near Me', icon: 'map-pin' },
+    { id: 'top', label: 'Top Rated', icon: 'star' },
     { id: 'browse', label: 'Browse', icon: 'layout-grid' },
     { id: 'wishlist', label: 'Wishlist', icon: 'heart' },
     { id: 'orders', label: 'Orders', icon: 'truck' },
@@ -118,6 +120,34 @@ const app = {
       this.wishlist = [this.dishes[0].id, this.dishes[1].id, this.dishes[2].id];
     }
     this.renderDishes();
+  },
+
+  async filterDishes() {
+    const input = document.getElementById('search-input');
+    if (!input) return;
+    const query = input.value.toLowerCase().trim();
+    
+    if (query.length > 2) {
+      try {
+        const res = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`);
+        const data = await res.json();
+        if (data.meals) {
+          this.dishes = data.meals.map(m => ({
+             id: m.idMeal,
+             name: m.strMeal,
+             price: parseFloat((Math.random() * 15 + 5).toFixed(2)),
+             image: m.strMealThumb + '/preview',
+             badge: m.strCategory
+          }));
+          this.renderDishes();
+        }
+      } catch (e) {
+         console.error("MealDB API Error:", e);
+      }
+    } else if (query.length === 0) {
+      this.loadDefaults();
+      this.renderDishes();
+    }
   },
 
   loadDefaults() {
@@ -298,6 +328,14 @@ const app = {
 
     if (tabId === 'home') {
       document.getElementById('tab-home').classList.remove('hidden');
+      this.loadDefaults();
+      this.renderDishes();
+    } else if (tabId === 'nearme') {
+      document.getElementById('tab-home').classList.remove('hidden');
+      this.fetchNearMe();
+    } else if (tabId === 'top') {
+      document.getElementById('tab-home').classList.remove('hidden');
+      this.fetchTopPriority();
     } else if (tabId === 'orders') {
       document.getElementById('tab-orders').classList.remove('hidden');
       this.renderOrders();
@@ -408,6 +446,77 @@ const app = {
          <td class="py-4 text-right"><button class="px-3 py-1.5 rounded bg-brand text-white text-xs font-bold shadow-sm">Reorder</button></td>
        </tr>
     `).join('');
+  },
+  
+  fetchNearMe() {
+    const grid = document.getElementById('dishes-grid');
+    grid.innerHTML = `<div class="col-span-full py-10 text-center text-zinc-400"><i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-brand"></i> Finding real restaurants near you...</div>`;
+    if(window.lucide) window.lucide.createIcons();
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        try {
+          // Use Overpass API to find REAL restaurants around the user's actual GPS location!
+          const query = `[out:json];node(around:3000,${lat},${lon})["amenity"~"restaurant|cafe"];out 12;`;
+          const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+          const data = await res.json();
+          
+          if (data.elements && data.elements.length > 0) {
+             const images = [
+               'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400',
+               'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400',
+               'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400',
+               'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400'
+             ];
+             this.dishes = data.elements.filter(e => e.tags && e.tags.name).map((e, i) => ({
+                id: 'near_' + e.id,
+                name: e.tags.name,
+                price: parseFloat((Math.random() * 20 + 10).toFixed(2)),
+                image: images[i % images.length], 
+                badge: (e.tags.amenity === 'cafe' ? 'Cafe' : 'Restaurant') + ' Near You'
+             }));
+             this.renderDishes();
+          } else {
+             grid.innerHTML = `<div class="col-span-full py-10 text-center text-zinc-400">No restaurants found within 3km. Try another location.</div>`;
+          }
+        } catch(e) {
+          console.error(e);
+          grid.innerHTML = `<div class="col-span-full py-10 text-center text-red-400">Failed to fetch live location data.</div>`;
+        }
+      }, () => {
+         grid.innerHTML = `<div class="col-span-full py-10 text-center text-zinc-400">Location access denied. Cannot find restaurants near you.</div>`;
+      });
+    } else {
+       grid.innerHTML = `<div class="col-span-full py-10 text-center text-zinc-400">Geolocation not supported by this browser.</div>`;
+    }
+  },
+  
+  async fetchTopPriority() {
+    const grid = document.getElementById('dishes-grid');
+    grid.innerHTML = `<div class="col-span-full py-10 text-center text-zinc-400"><i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-brand"></i> Fetching top rated global dishes...</div>`;
+    if(window.lucide) window.lucide.createIcons();
+    
+    try {
+      // Fetch 5-star premium meals from TheMealDB (Seafood category as a proxy for premium)
+      const res = await fetch(`https://www.themealdb.com/api/json/v1/1/filter.php?c=Seafood`);
+      const data = await res.json();
+      if (data.meals) {
+        this.dishes = data.meals.slice(0, 9).map(m => ({
+           id: m.idMeal,
+           name: m.strMeal,
+           price: parseFloat((Math.random() * 40 + 25).toFixed(2)), // Expensive top rated
+           image: m.strMealThumb + '/preview',
+           badge: 'Top Rated ⭐⭐⭐⭐⭐'
+        }));
+        this.renderDishes();
+      }
+    } catch (e) {
+       console.error(e);
+       this.loadDefaults();
+       this.renderDishes();
+    }
   },
   
   renderWishlistOnly() {
