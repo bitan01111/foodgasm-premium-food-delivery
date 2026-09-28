@@ -1,8 +1,10 @@
 const app = {
   activeTab: 'home',
   dishes: [],
-  cart: [],
-  wishlist: [],
+  cart: JSON.parse(localStorage.getItem('fg_cart')) || [],
+  wishlist: JSON.parse(localStorage.getItem('fg_wishlist')) || [],
+  orderHistory: JSON.parse(localStorage.getItem('fg_orders')) || [],
+  map: null,
   
   user: null,
   
@@ -123,7 +125,8 @@ const app = {
       { id: '1', name: 'Gourmet Wagyu Burger', price: 4.50, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=400&q=80', badge: '' },
       { id: '2', name: 'Seafood Paella', price: 23.60, image: 'https://images.unsplash.com/photo-1534080564583-6be75777b70a?auto=format&fit=crop&w=400&q=80', badge: '' },
       { id: '3', name: 'Truffle Pasta', price: 5.50, image: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=400&q=80', badge: '' },
-      { id: '4', name: 'Berles Big Sitesitr', price: 3.50, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400', badge: '' }
+      { id: '5', name: 'Karim\'s Old Delhi', price: 18.75, image: 'https://images.unsplash.com/photo-1585937421606-0d25d19e9921?auto=format&fit=crop&w=400&q=80', badge: 'Spicy' },
+      { id: '6', name: 'Corner House Ice Cream', price: 7.50, image: 'https://images.unsplash.com/photo-1557142046-c704a3adf364?auto=format&fit=crop&w=400&q=80', badge: 'Dessert' }
     ];
   },
 
@@ -174,6 +177,7 @@ const app = {
     } else {
       this.wishlist.push(id);
     }
+    localStorage.setItem('fg_wishlist', JSON.stringify(this.wishlist));
     this.renderDishes();
     this.renderWishlistGrid();
   },
@@ -201,6 +205,7 @@ const app = {
   },
 
   updateCart() {
+    localStorage.setItem('fg_cart', JSON.stringify(this.cart));
     const container = document.getElementById('cart-items');
     container.innerHTML = '';
     
@@ -271,6 +276,7 @@ const app = {
     } else if (tabId === 'orders') {
       document.getElementById('tab-orders').classList.remove('hidden');
       this.renderOrders();
+      this.initMap();
     } else if (tabId === 'wishlist') {
       // Re-use home layout but filter dishes
       document.getElementById('tab-home').classList.remove('hidden');
@@ -311,13 +317,33 @@ const app = {
        price: orderTotal,
        fee: 3.00
     });
+    localStorage.setItem('fg_orders', JSON.stringify(this.orderHistory));
     
     // Clear cart
     this.cart = [];
     this.updateCart();
     
+    // Confetti!
+    if(window.confetti) {
+       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    }
+    
     // Switch to orders
     this.switchTab('orders');
+  },
+  
+  initMap() {
+    if(this.map || typeof L === 'undefined') return;
+    const mapEl = document.getElementById('leaflet-map');
+    if(!mapEl) return;
+    
+    this.map = L.map('leaflet-map', { zoomControl: false, attributionControl: false }).setView([28.6139, 77.2090], 13);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(this.map);
+    
+    // Add delivery marker
+    const icon = L.divIcon({ className: 'bg-brand text-white rounded-full flex items-center justify-center shadow-lg p-2', html: '<i data-lucide="bus" class="w-4 h-4"></i>' });
+    L.marker([28.6139, 77.2090], { icon }).addTo(this.map);
+    if(window.lucide) window.lucide.createIcons();
   },
   
   renderOrders() {
