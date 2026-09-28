@@ -129,6 +129,31 @@ const app = {
       { id: '6', name: 'Corner House Ice Cream', price: 7.50, image: 'https://images.unsplash.com/photo-1557142046-c704a3adf364?auto=format&fit=crop&w=400&q=80', badge: 'Dessert' }
     ];
   },
+  
+  detectLocation() {
+    const btn = document.getElementById('location-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Locating...`;
+    if(window.lucide) window.lucide.createIcons();
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        // Mock successful location
+        btn.innerHTML = `<i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i> New Delhi, IN`;
+        btn.classList.replace('text-brand', 'text-white');
+        if(window.lucide) window.lucide.createIcons();
+        
+        // Shuffle dishes to mock "Near You"
+        this.dishes = this.dishes.sort(() => Math.random() - 0.5);
+        this.renderDishes();
+      }, () => {
+        btn.innerHTML = originalText;
+        alert("Location access denied.");
+      });
+    } else {
+      btn.innerHTML = originalText;
+    }
+  },
 
   renderDishes() {
     const grid = document.getElementById('dishes-grid');
@@ -305,12 +330,20 @@ const app = {
       alert("Cart is empty!");
       return;
     }
-    
     const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const orderTotal = subtotal + 3.00;
     
+    document.getElementById('payment-amount').innerText = '$' + orderTotal.toFixed(2);
+    document.getElementById('payment-modal').classList.remove('hidden');
+  },
+  
+  processPayment() {
+    const subtotal = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const orderTotal = subtotal + 3.00;
+    
+    document.getElementById('payment-modal').classList.add('hidden');
+    
     // Add to history
-    this.orderHistory = this.orderHistory || [];
     this.orderHistory.unshift({
        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
        time: 'Just now',
@@ -337,13 +370,23 @@ const app = {
     const mapEl = document.getElementById('leaflet-map');
     if(!mapEl) return;
     
-    this.map = L.map('leaflet-map', { zoomControl: false, attributionControl: false }).setView([28.6139, 77.2090], 13);
+    this.map = L.map('leaflet-map', { zoomControl: false, attributionControl: false }).setView([28.6139, 77.2090], 14);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(this.map);
     
     // Add delivery marker
-    const icon = L.divIcon({ className: 'bg-brand text-white rounded-full flex items-center justify-center shadow-lg p-2', html: '<i data-lucide="bus" class="w-4 h-4"></i>' });
-    L.marker([28.6139, 77.2090], { icon }).addTo(this.map);
+    const icon = L.divIcon({ className: 'bg-brand text-white rounded-full flex items-center justify-center shadow-lg p-2', html: '<i data-lucide="bus" class="w-4 h-4"></i>', iconSize: [32,32] });
+    this.deliveryMarker = L.marker([28.6139, 77.2090], { icon }).addTo(this.map);
     if(window.lucide) window.lucide.createIcons();
+    
+    // Animate marker
+    let lat = 28.6139;
+    let lng = 77.2090;
+    setInterval(() => {
+       lat += (Math.random() - 0.2) * 0.0002;
+       lng += (Math.random() - 0.2) * 0.0002;
+       this.deliveryMarker.setLatLng([lat, lng]);
+       this.map.panTo([lat, lng], {animate: true, duration: 1});
+    }, 2000);
   },
   
   renderOrders() {
